@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "692855397468",
+    "project_id": "cos-challenge",
+    "storage_bucket": "cos-challenge.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:692855397468:android:0c476baf2f3cad73bf1a99",
+        "android_client_info": {
+          "package_name": "com.leocosie.cosapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "692855397468-7rqbc86koeefs3ruvf8mqppr6grocp4r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUgdQVlKUB9xwlz0jZRPEuahTszjaPi_c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "692855397468-7rqbc86koeefs3ruvf8mqppr6grocp4r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "692855397468-5dprfmq9d93hqmcqda18ddacfuve3hmc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.leocosie.cosapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
