@@ -1,7 +1,9 @@
+import 'package:cosapp/constants/routes.dart';
+import 'package:cosapp/widgets/dialogs.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
+import 'dart:developer' as devtools show log;
 import '../firebase_options.dart';
 
 class LogInView extends StatefulWidget {
@@ -58,22 +60,26 @@ class _LogInViewState extends State<LogInView> {
                         final password = _password.text;
                         try {
                           final _auth = FirebaseAuth.instance;
-                          final userCredential = await _auth
-                              .signInWithEmailAndPassword(
+                          final userCredential =
+                              await _auth.signInWithEmailAndPassword(
                                   email: email, password: password);
-                          print('USER CREDENTIAL: $userCredential');
-                          // these two are basically the same except user credential has more info on it.
-                          print('CURRENT USER: ${_auth.currentUser}');
-                          Navigator.pushNamed(context, '/profilepage');
+                          devtools.log('USER CREDENTIAL: $userCredential');
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            profileRoute,
+                            (route) => false,
+                          );
                         } on FirebaseException catch (e) {
-                          //TODO: Add dialog alerts
                           if (e.code == 'invalid-email') {
-                            print('You\'ve inserted an invalid email');
+                            await showErrorDialog(context, e.code);
                           } else if (e.code == 'user-not-found') {
-                            print('User not found');
+                            await showErrorDialog(context, 'User not found');
                           } else if (e.code == 'wrong-password') {
-                            print('Wrong password!');
+                            await showErrorDialog(context, 'Wrong credentials');
+                          } else {
+                            await showErrorDialog(context, 'Error: %{e.code}');
                           }
+                        } catch(e) {
+                            await showErrorDialog(context, e.toString());
                         }
                       },
                       child: const Text('Login'),
