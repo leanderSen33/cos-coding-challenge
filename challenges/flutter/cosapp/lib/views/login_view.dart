@@ -20,7 +20,9 @@ class _LogInViewState extends State<LogInView> {
   @override
   void initState() {
     _email = TextEditingController();
+    _email.text = 'test@cosie.com';
     _password = TextEditingController();
+    _password.text = '123abctesting';
     super.initState();
   }
 
@@ -55,10 +57,14 @@ class _LogInViewState extends State<LogInView> {
                         final email = _email.text;
                         final password = _password.text;
                         try {
-                          final userCredential = await FirebaseAuth.instance
+                          final _auth = FirebaseAuth.instance;
+                          final userCredential = await _auth
                               .signInWithEmailAndPassword(
                                   email: email, password: password);
-                          print(userCredential);
+                          print('USER CREDENTIAL: $userCredential');
+                          // these two are basically the same except user credential has more info on it.
+                          print('CURRENT USER: ${_auth.currentUser}');
+                          Navigator.pushNamed(context, '/profilepage');
                         } on FirebaseException catch (e) {
                           //TODO: Add dialog alerts
                           if (e.code == 'invalid-email') {
