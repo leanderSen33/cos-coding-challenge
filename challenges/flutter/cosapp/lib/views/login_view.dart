@@ -1,10 +1,9 @@
 import 'package:cosapp/constants/routes.dart';
+import 'package:cosapp/services/auth/auth_exceptions.dart';
+import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:cosapp/widgets/dialogs.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
-import '../firebase_options.dart';
 
 class LogInView extends StatefulWidget {
   const LogInView({Key? key, required this.title}) : super(key: key);
@@ -43,9 +42,7 @@ class _LogInViewState extends State<LogInView> {
       ),
       body: Center(
         child: FutureBuilder(
-          future: Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform,
-          ),
+          future: AuthService.firebase().initialize(),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
@@ -59,27 +56,34 @@ class _LogInViewState extends State<LogInView> {
                         final email = _email.text;
                         final password = _password.text;
                         try {
-                          final _auth = FirebaseAuth.instance;
                           final userCredential =
-                              await _auth.signInWithEmailAndPassword(
-                                  email: email, password: password);
-                          devtools.log('USER CREDENTIAL: $userCredential');
+                              await AuthService.firebase().logIn(
+                            email: email,
+                            password: password,
+                          );
+                          devtools.log(
+                            'USER CREDENTIAL: ${userCredential.email}',
+                          );
+                          //TODO: CHeck out this guy because it's causing problems sometimes. 
                           Navigator.of(context).pushNamedAndRemoveUntil(
                             profileRoute,
                             (route) => false,
                           );
-                        } on FirebaseException catch (e) {
-                          if (e.code == 'invalid-email') {
-                            await showErrorDialog(context, e.code);
-                          } else if (e.code == 'user-not-found') {
-                            await showErrorDialog(context, 'User not found');
-                          } else if (e.code == 'wrong-password') {
-                            await showErrorDialog(context, 'Wrong credentials');
-                          } else {
-                            await showErrorDialog(context, 'Error: %{e.code}');
-                          }
-                        } catch(e) {
-                            await showErrorDialog(context, e.toString());
+                        } on UserNotFoundAuthException {
+                          await showErrorDialog(
+                            context,
+                            'User not found',
+                          );
+                        } on WrongPasswordAuthException {
+                          await showErrorDialog(
+                            context,
+                            'Wrong credentials',
+                          );
+                        } on GenericAuthException {
+                          await showErrorDialog(
+                            context,
+                            'Authentication error',
+                          );
                         }
                       },
                       child: const Text('Login'),

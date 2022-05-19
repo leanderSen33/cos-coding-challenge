@@ -5,7 +5,6 @@ import 'views/profile_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(
     MaterialApp(
       title: 'Flutter Demo',

@@ -1,12 +1,9 @@
 import 'package:cosapp/constants/routes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 
+import '../enums/menu_action.dart';
 import '../widgets/dialogs.dart';
-
-enum MenuAction {
-  logout,
-}
 
 class ProfileView extends StatelessWidget {
   const ProfileView({Key? key}) : super(key: key);
@@ -24,7 +21,7 @@ class ProfileView extends StatelessWidget {
                 case MenuAction.logout:
                   final shouldLogOut = await showLogOutDialog(context);
                   if (shouldLogOut) {
-                    await FirebaseAuth.instance.signOut();
+                    await AuthService.firebase().logOut();
                     Navigator.of(context).pushNamedAndRemoveUntil(
                       loginRoute,
                       (route) => false,
@@ -49,4 +46,3 @@ class ProfileView extends StatelessWidget {
     );
   }
 }
-
