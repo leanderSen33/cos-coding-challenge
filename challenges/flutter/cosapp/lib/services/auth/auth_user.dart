@@ -5,8 +5,10 @@ import 'package:flutter/foundation.dart';
 class AuthUser {
   final String id;
   final String email;
+  final String avatarUrl;
   // final bool isEmailVerified; //TODO: Delete this if not needed
   const AuthUser({
+    required this.avatarUrl,
     required this.id,
     required this.email,
     // required this.isEmailVerified,
@@ -14,7 +16,7 @@ class AuthUser {
 
   factory AuthUser.fromFirebase(User user) => AuthUser(
         id: user.uid,
-        email: user.email!,
+        email: user.email!, avatarUrl: user.photoURL!,
         // isEmailVerified: user.emailVerified,
       );
 }

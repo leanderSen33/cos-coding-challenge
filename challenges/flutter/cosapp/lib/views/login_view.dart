@@ -64,7 +64,7 @@ class _LogInViewState extends State<LogInView> {
                           devtools.log(
                             'USER CREDENTIAL: ${userCredential.email}',
                           );
-                          //TODO: CHeck out this guy because it's causing problems sometimes. 
+                          //TODO: CHeck out this guy because it's causing problems sometimes.
                           Navigator.of(context).pushNamedAndRemoveUntil(
                             profileRoute,
                             (route) => false,
