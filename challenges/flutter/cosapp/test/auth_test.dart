@@ -75,7 +75,8 @@ class MockAuthProvider implements AuthProvider {
     if (password == 'foobar') throw WrongPasswordAuthException();
     const user = AuthUser(
       id: 'my_id',
-      email: 'foo@bar.com', avatarUrl: '',
+      email: 'foo@bar.com',
+      //  avatarUrl: '',
     );
     _user = user;
     return Future.value(user);

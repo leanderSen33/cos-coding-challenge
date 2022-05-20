@@ -6,10 +6,11 @@ import 'package:image_picker/image_picker.dart';
 
 import '../enums/menu_action.dart';
 import '../widgets/dialogs.dart';
+import 'dart:developer' as devtools show log;
 
 class ProfileView extends StatelessWidget {
-  const ProfileView({Key? key}) : super(key: key);
-
+  ProfileView({Key? key}) : super(key: key);
+  final ImagePicker _picker = ImagePicker();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,10 +59,11 @@ class ProfileView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   Avatar(
-                    avatarUrl: AuthService.firebase().currentUser?.avatarUrl,
+                    avatarUrl: null,
                     onTap: () async {
-                      await ImagePicker()
-                          .pickImage(source: ImageSource.gallery);
+                      final XFile? image =
+                          await _picker.pickImage(source: ImageSource.gallery);
+                      devtools.log('${image?.path}');
                     },
                   ),
                   Text(

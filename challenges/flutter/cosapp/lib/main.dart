@@ -14,7 +14,7 @@ void main() async {
       initialRoute: loginRoute,
       routes: {
         loginRoute: (context) => const LogInView(title: 'login'),
-        profileRoute: (context) => const ProfileView(),
+        profileRoute: (context) =>  ProfileView(),
         // '/vehicleinspectionoverviewpage/': (context) =>,
         // '/vehicleinspectiondetailspage/': (context) => ,
       },
