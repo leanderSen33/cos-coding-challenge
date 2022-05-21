@@ -13,8 +13,10 @@ void main() async {
       ),
       initialRoute: loginRoute,
       routes: {
+        // TODO: implement a way (landing page) to show the profile view if the user is already logged in
+        //! Check Andrea's lesson: 134 Preview of the Sign in...
         loginRoute: (context) => const LogInView(title: 'login'),
-        profileRoute: (context) =>  ProfileView(),
+        profileRoute: (context) => const ProfileView(),
         // '/vehicleinspectionoverviewpage/': (context) =>,
         // '/vehicleinspectiondetailspage/': (context) => ,
       },

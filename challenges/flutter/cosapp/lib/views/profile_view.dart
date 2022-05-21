@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cosapp/services/sorage/storage_service.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cosapp/constants/routes.dart';
@@ -8,9 +11,21 @@ import '../enums/menu_action.dart';
 import '../widgets/dialogs.dart';
 import 'dart:developer' as devtools show log;
 
-class ProfileView extends StatelessWidget {
-  ProfileView({Key? key}) : super(key: key);
+class ProfileView extends StatefulWidget {
+  const ProfileView({Key? key}) : super(key: key);
+
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
   final ImagePicker _picker = ImagePicker();
+  late File file;
+  String downloadedURL =
+      'https://firebasestorage.googleapis.com/v0/b/cos-challenge.appspot.com/o/user%2Fprofile%2FrYeD0NqxqeZwhabKywtPqn6jfGh1?alt=media&token=777f53db-b4c0-4f82-b865-7957fea52799';
+  bool isCameraMethodPreferred = false;
+  var storage = StorageService();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,75 +59,55 @@ class ProfileView extends StatelessWidget {
         ],
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20.0),
-                  bottomRight: Radius.circular(20.0),
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Avatar(
-                    avatarUrl: null,
-                    onTap: () async {
-                      final XFile? image =
-                          await _picker.pickImage(source: ImageSource.gallery);
-                      devtools.log('${image?.path}');
-                    },
-                  ),
-                  Text(
-                      "Hi ${AuthService.firebase().currentUser?.email} nice to see you here.'}"),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: <Widget>[
-                    TextFormField(
-                      decoration: const InputDecoration(hintText: "Username"),
+          Avatar(
+            avatarUrl: downloadedURL,
+            onTap: () async {
+              try {
+                final XFile? image = await _picker.pickImage(
+                    source: isCameraMethodPreferred
+                        ? ImageSource.camera
+                        : ImageSource.gallery);
+
+                if (image == null) {
+                  devtools.log('No image was selected');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No file selected'),
                     ),
-                    const SizedBox(height: 20.0),
-                    // Expanded(
-                    //   child: Column(
-                    //     children: <Widget>[
-                    //       Text(
-                    //         "Manage Password",
-                    //         style: Theme.of(context).textTheme.display1,
-                    //       ),
-                    //       TextFormField(
-                    //         decoration: InputDecoration(hintText: "Password"),
-                    //       ),
-                    //       TextFormField(
-                    //         decoration:
-                    //             InputDecoration(hintText: "New Password"),
-                    //       ),
-                    //       TextFormField(
-                    //         decoration:
-                    //             InputDecoration(hintText: "Repeat Password"),
-                    //       )
-                    //     ],
-                    //   ),
-                    // ),
-                    // RaisedButton(
-                    //   onPressed: () {
-                    //     // TODO: Save somehow
-                    //     Navigator.pop(context);
-                    //   },
-                    //   child: Text("Save Profile"),
-                    // )
-                  ],
-                ),
-              ))
+                  );
+                } else {
+                  devtools.log('Path of the selected image: ${image.path}');
+                  file = File(image.path);
+
+                  await storage.uploadFile(file);
+                  downloadedURL = await storage.getFile();
+                  devtools.log('downloaded URL: $downloadedURL');
+                  setState(() {});
+                }
+              } catch (e) {
+                devtools.log(e.toString());
+              }
+            },
+          ),
+          Column(
+            children: [
+              const Text('From Album / From Camera'),
+              Switch.adaptive(
+                onChanged: (value) {
+                  setState(() {
+                    isCameraMethodPreferred = value;
+                    print('value $value');
+                  });
+                },
+                value: isCameraMethodPreferred,
+              ),
+            ],
+          ),
+          Text(
+              // TODO: Refactor this.
+              "Hi ${AuthService.firebase().currentUser?.email} nice to see you here."),
         ],
       ),
     );
