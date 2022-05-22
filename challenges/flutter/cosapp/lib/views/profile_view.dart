@@ -8,6 +8,8 @@ import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../enums/menu_action.dart';
+import '../models/user_preferences.dart';
+import '../services/database/firestore.dart';
 import '../widgets/dialogs.dart';
 import 'dart:developer' as devtools show log;
 
@@ -21,10 +23,20 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   final ImagePicker _picker = ImagePicker();
   late File file;
-  String downloadedURL =
-      'https://firebasestorage.googleapis.com/v0/b/cos-challenge.appspot.com/o/user%2Fprofile%2FrYeD0NqxqeZwhabKywtPqn6jfGh1?alt=media&token=777f53db-b4c0-4f82-b865-7957fea52799';
+  String downloadedURL = 'https://dummyimage.com/300.png/09f/fff';
   bool isCameraMethodPreferred = false;
-  var storage = StorageService();
+  final storage = StorageService();
+
+  final firestore = Firestore();
+
+  final id = AuthService.firebase().currentUser?.id;
+
+  void setPhotoMethod() {
+    devtools.log('setPhotoMethod\'s been called');
+    final userPreference =
+        UserPreferences(id: id!, preferCamera: isCameraMethodPreferred);
+    firestore.setPreferredPhotoMethod(userPreference);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,48 +73,64 @@ class _ProfileViewState extends State<ProfileView> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          Avatar(
-            avatarUrl: downloadedURL,
-            onTap: () async {
-              try {
-                final XFile? image = await _picker.pickImage(
-                    source: isCameraMethodPreferred
-                        ? ImageSource.camera
-                        : ImageSource.gallery);
+          FutureBuilder<String>(
+              future: storage.getFile(),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                return Avatar(
+                  avatarUrl:
+                      snapshot.data ?? 'https://dummyimage.com/300.png/09f/fff',
+                  onTap: () async {
+                    try {
+                      final XFile? image = await _picker.pickImage(
+                          source: isCameraMethodPreferred
+                              ? ImageSource.camera
+                              : ImageSource.gallery);
 
-                if (image == null) {
-                  devtools.log('No image was selected');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No file selected'),
-                    ),
-                  );
-                } else {
-                  devtools.log('Path of the selected image: ${image.path}');
-                  file = File(image.path);
+                      if (image == null) {
+                        devtools.log('No image was selected');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No file selected'),
+                          ),
+                        );
+                      } else {
+                        devtools
+                            .log('Path of the selected image: ${image.path}');
+                        file = File(image.path);
 
-                  await storage.uploadFile(file);
-                  downloadedURL = await storage.getFile();
-                  devtools.log('downloaded URL: $downloadedURL');
-                  setState(() {});
-                }
-              } catch (e) {
-                devtools.log(e.toString());
-              }
-            },
-          ),
+                        await storage.uploadFile(file);
+                        downloadedURL = await storage.getFile();
+                        devtools.log('downloaded URL: $downloadedURL');
+                        setState(() {});
+                      }
+                    } catch (e) {
+                      devtools.log(e.toString());
+                    }
+                  },
+                );
+              }),
           Column(
             children: [
+              FutureBuilder<bool>(
+                  future: firestore.getUpdatedPreferredPhotoMethod(id!),
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    return Column(
+                      children: [
+                        Text(snapshot.data.toString()),
+                        Switch.adaptive(
+                          onChanged: (value) {
+                            setState(() {
+                              isCameraMethodPreferred = value;
+                              setPhotoMethod();
+                              // print('value $value');
+                            });
+                          },
+                          value: snapshot.data ?? true,
+                        ),
+                      ],
+                    );
+                  }),
               const Text('From Album / From Camera'),
-              Switch.adaptive(
-                onChanged: (value) {
-                  setState(() {
-                    isCameraMethodPreferred = value;
-                    print('value $value');
-                  });
-                },
-                value: isCameraMethodPreferred,
-              ),
             ],
           ),
           Text(
