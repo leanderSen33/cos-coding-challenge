@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cosapp/services/sorage/storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 
 import 'package:cosapp/constants/routes.dart';
 import 'package:cosapp/services/auth/auth_service.dart';
@@ -21,44 +22,22 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  final ImagePicker _picker = ImagePicker();
   late File file;
+  final ImagePicker _picker = ImagePicker();
+  final storage = StorageService();
+  final firestore = Firestore();
+  final _auth = AuthService.firebase();
   String downloadedURL = 'https://dummyimage.com/300.png/09f/fff';
   bool isCameraMethodPreferred = false;
-  final storage = StorageService();
-
-  final firestore = Firestore();
-
-  final id = AuthService.firebase().currentUser?.id;
-
-  void setPhotoMethod() {
-    devtools.log('setPhotoMethod\'s been called');
-    final userPreference =
-        UserPreferences(id: id!, preferCamera: isCameraMethodPreferred);
-    firestore.setPreferredPhotoMethod(userPreference);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Profile Page'),
+        title: Text("${_auth.currentUser?.email}"),
         actions: [
           PopupMenuButton<MenuAction>(
-            onSelected: (value) async {
-              switch (value) {
-                case MenuAction.logout:
-                  final shouldLogOut = await showLogOutDialog(context);
-                  if (shouldLogOut) {
-                    await AuthService.firebase().logOut();
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      loginRoute,
-                      (route) => false,
-                    );
-                  }
-              }
-            },
+            onSelected: chooseAction,
             itemBuilder: (context) {
               return [
                 const PopupMenuItem<MenuAction>(
@@ -73,100 +52,196 @@ class _ProfileViewState extends State<ProfileView> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
+          Text(
+            "Hi ${AuthService.firebase().currentUser?.email}! Nice to see you again.",
+          ),
           FutureBuilder<String>(
-              future: storage.getFile(),
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                return Avatar(
-                  avatarUrl:
-                      snapshot.data ?? 'https://dummyimage.com/300.png/09f/fff',
-                  onTap: () async {
-                    try {
-                      final XFile? image = await _picker.pickImage(
-                          source: isCameraMethodPreferred
-                              ? ImageSource.camera
-                              : ImageSource.gallery);
+            future: storage.getFile(),
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              return CircleAvatar(
+                radius: 90.0,
+                backgroundImage: NetworkImage(
+                    snapshot.data ?? 'https://dummyimage.com/300.png/09f/fff'),
+              );
+            },
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              primary: Colors.white,
+              backgroundColor: Colors.grey,
+            ),
+            onPressed: () async {
+              try {
+                final XFile? image = await _picker.pickImage(
+                    source: isCameraMethodPreferred
+                        ? ImageSource.camera
+                        : ImageSource.gallery);
 
-                      if (image == null) {
-                        devtools.log('No image was selected');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('No file selected'),
-                          ),
-                        );
-                      } else {
-                        devtools
-                            .log('Path of the selected image: ${image.path}');
-                        file = File(image.path);
+                if (image == null) {
+                  devtools.log('No image was selected');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No file selected'),
+                    ),
+                  );
+                } else {
+                  devtools.log('Path of the selected image: ${image.path}');
+                  file = File(image.path);
 
-                        await storage.uploadFile(file);
-                        downloadedURL = await storage.getFile();
-                        devtools.log('downloaded URL: $downloadedURL');
-                        setState(() {});
-                      }
-                    } catch (e) {
-                      devtools.log(e.toString());
-                    }
-                  },
-                );
-              }),
+                  await storage.uploadFile(file);
+                  downloadedURL = await storage.getFile();
+                  devtools.log('downloaded URL: $downloadedURL');
+                  setState(() {});
+                }
+              } catch (e) {
+                devtools.log(e.toString());
+              }
+            },
+            child: const Text(
+              'Change photo',
+            ),
+          ),
           Column(
             children: [
               FutureBuilder<bool>(
-                  future: firestore.getUpdatedPreferredPhotoMethod(id!),
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    return Column(
-                      children: [
-                        Text(snapshot.data.toString()),
-                        Switch.adaptive(
-                          onChanged: (value) {
+                future: firestore
+                    .getUpdatedPreferredPhotoMethod(_auth.currentUser!.id),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  return Column(
+                    children: [
+                      const Text('Preferred photo method:'),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Center(
+                        child: FlutterSwitch(
+                          inactiveIcon: const Icon(Icons.folder),
+                          activeIcon: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                          ),
+                          inactiveColor: Colors.grey,
+                          activeColor: Colors.grey,
+                          toggleColor: Colors.black,
+                          inactiveToggleColor: Colors.white,
+                          width: 90.0,
+                          height: 33.0,
+                          valueFontSize: 17.0,
+                          toggleSize: 45.0,
+                          value: snapshot.data ?? true,
+                          borderRadius: 30.0,
+                          padding: 4.0,
+                          onToggle: (value) {
                             setState(() {
                               isCameraMethodPreferred = value;
                               setPhotoMethod();
-                              // print('value $value');
                             });
                           },
-                          value: snapshot.data ?? true,
                         ),
-                      ],
-                    );
-                  }),
-              const Text('From Album / From Camera'),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
-          Text(
-              // TODO: Refactor this.
-              "Hi ${AuthService.firebase().currentUser?.email} nice to see you here."),
         ],
       ),
     );
   }
-}
 
-class Avatar extends StatelessWidget {
-  final String? avatarUrl;
-  final VoidCallback onTap;
+  void setPhotoMethod() {
+    devtools.log('setPhotoMethod\'s been called');
+    final userPreference = UserPreferences(
+        id: _auth.currentUser!.id, preferCamera: isCameraMethodPreferred);
+    firestore.setPreferredPhotoMethod(userPreference);
+  }
 
-  const Avatar({
-    Key? key,
-    required this.avatarUrl,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Center(
-        child: avatarUrl == null
-            ? const CircleAvatar(
-                radius: 50.0,
-                child: Icon(Icons.photo_camera),
-              )
-            : CircleAvatar(
-                radius: 50.0,
-                backgroundImage: NetworkImage(avatarUrl!),
-              ),
-      ),
-    );
+  void chooseAction(value) async {
+    switch (value) {
+      case MenuAction.logout:
+        final shouldLogOut = await showLogOutDialog(context);
+        if (shouldLogOut) {
+          await AuthService.firebase().logOut();
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            loginRoute,
+            (route) => false,
+          );
+        }
+    }
   }
 }
+
+
+
+
+
+//  Column(
+//         crossAxisAlignment: CrossAxisAlignment.stretch,
+//         children: <Widget>[
+//           Expanded(
+//             child: Container(
+//               decoration: BoxDecoration(
+//                 color: Theme.of(context).primaryColor,
+//                 borderRadius: BorderRadius.only(
+//                   bottomLeft: Radius.circular(20.0),
+//                   bottomRight: Radius.circular(20.0),
+//                 ),
+//               ),
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                 children: <Widget>[
+//                   Avatar(
+//                     avatarUrl: _currentUser?.avatarUrl,
+//                     onTap: () {},
+//                   ),
+//                   Text(
+//                       "Hi ${_currentUser?.displayName ?? 'nice to see you here.'}"),
+//                 ],
+//               ),
+//             ),
+//           ),
+//           Expanded(
+//               flex: 2,
+//               child: Padding(
+//                 padding: const EdgeInsets.all(20.0),
+//                 child: Column(
+//                   children: <Widget>[
+//                     TextFormField(
+//                       decoration: InputDecoration(hintText: "Username"),
+//                     ),
+//                     SizedBox(height: 20.0),
+//                     Expanded(
+//                       child: Column(
+//                         children: <Widget>[
+//                           Text(
+//                             "Manage Password",
+//                             style: Theme.of(context).textTheme.display1,
+//                           ),
+//                           TextFormField(
+//                             decoration: InputDecoration(hintText: "Password"),
+//                           ),
+//                           TextFormField(
+//                             decoration:
+//                                 InputDecoration(hintText: "New Password"),
+//                           ),
+//                           TextFormField(
+//                             decoration:
+//                                 InputDecoration(hintText: "Repeat Password"),
+//                           )
+//                         ],
+//                       ),
+//                     ),
+//                     RaisedButton(
+//                       onPressed: () {
+//                         // TODO: Save somehow
+//                         Navigator.pop(context);
+//                       },
+//                       child: Text("Save Profile"),
+//                     )
+//                   ],
+//                 ),
+//               ))
+//         ],
+//       ),
+    
