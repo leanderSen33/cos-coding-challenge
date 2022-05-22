@@ -66,7 +66,7 @@ class _LogInViewState extends State<LogInView> {
                           );
                           //TODO: CHeck out this guy because it's causing problems sometimes.
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                            profileRoute,
+                            overviewRoute,
                             (route) => false,
                           );
                         } on UserNotFoundAuthException {

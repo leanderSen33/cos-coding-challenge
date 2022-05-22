@@ -2,11 +2,13 @@ import 'package:cosapp/views/login_view.dart';
 import 'package:flutter/material.dart';
 import 'constants/routes.dart';
 import 'views/profile_view.dart';
+import 'views/vehicle_inspection_overview_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.orange,
@@ -17,7 +19,7 @@ void main() async {
         //! Check Andrea's lesson: 134 Preview of the Sign in...
         loginRoute: (context) => const LogInView(title: 'login'),
         profileRoute: (context) => const ProfileView(),
-        // '/vehicleinspectionoverviewpage/': (context) =>,
+        overviewRoute: (context) => const VehicleInspectionOverviewView(),
         // '/vehicleinspectiondetailspage/': (context) => ,
       },
     ),
