@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:developer' as devtools show log;
 
 //TODO: configure imagePicker for IOS. We have to edit the plist or somthing
 
@@ -18,13 +19,12 @@ class StorageService {
 
     try {
       await profileImagesRef.putFile(file).then(
-            (p0) => print('done'),
+            (p0) => devtools.log('uploading file, done'),
           );
     } on FirebaseException catch (e) {
-      print(e);
+      devtools.log(e.toString());
     }
   }
-
 
   Future<String> getFile() async {
     final results = await storageRef

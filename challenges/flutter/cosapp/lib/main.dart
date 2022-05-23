@@ -19,7 +19,7 @@ void main() async {
         //! Check Andrea's lesson: 134 Preview of the Sign in...
         loginRoute: (context) => const LogInView(title: 'login'),
         profileRoute: (context) => const ProfileView(),
-        overviewRoute: (context) =>  VehicleInspectionOverviewView(),
+        overviewRoute: (context) =>  const VehicleInspectionOverviewView(),
         // '/vehicleinspectiondetailspage/': (context) => ,
       },
     ),

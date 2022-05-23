@@ -3,8 +3,9 @@ import 'auth_provider.dart';
 import 'auth_user.dart';
 import 'package:cosapp/services/auth/auth_exceptions.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'dart:developer' as devtools show log;
 import 'package:firebase_auth/firebase_auth.dart'
-    show FirebaseAuth, FirebaseAuthException;
+    show EmailAuthProvider, FirebaseAuth, FirebaseAuthException;
 
 class FirebaseAuthProvider implements AuthProvider {
   @override
@@ -82,14 +83,31 @@ class FirebaseAuthProvider implements AuthProvider {
     }
   }
 
-  // TODO: Delete if won't be used.
-  // @override
-  // Future<void> sendEmailVerification() async {
-  //   final user = _firebaseAuth.currentUser;
-  //   if (user != null) {
-  //     await user.sendEmailVerification();
-  //   } else {
-  //     throw UserNotLoggedInAuthException();
-  //   }
+  //   Future<void> updatePassword(String password) async {
+  //   var firebaseUser = await _auth.currentUser();
+  //   firebaseUser.updatePassword(password);
   // }
+
+  @override
+  Future<bool> validateCurrentPassword(String password) async {
+    var firebaseUser = FirebaseAuth.instance.currentUser;
+
+    var authCredentials = EmailAuthProvider.credential(
+        email: firebaseUser!.email!, password: password);
+
+    try {
+      var authResult =
+          await firebaseUser.reauthenticateWithCredential(authCredentials);
+      return authResult.user != null;
+    } catch (e) {
+      devtools.log(e.toString());
+      return false;
+    }
+  }
+
+  @override
+  void updatePassword(String password) async {
+    var firebaseUser = FirebaseAuth.instance.currentUser;
+    await firebaseUser?.updatePassword(password);
+  }
 }
