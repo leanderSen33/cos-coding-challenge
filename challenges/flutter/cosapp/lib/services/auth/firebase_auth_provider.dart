@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../firebase_options.dart';
 import 'auth_provider.dart';
 import 'auth_user.dart';
@@ -8,12 +10,12 @@ import 'package:firebase_auth/firebase_auth.dart'
     show EmailAuthProvider, FirebaseAuth, FirebaseAuthException;
 
 class FirebaseAuthProvider implements AuthProvider {
-  @override
-  Future<void> initialize() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  }
+  // @override
+  // Future<void> initialize() async {
+  //   await Firebase.initializeApp(
+  //     options: DefaultFirebaseOptions.currentPlatform,
+  //   );
+  // }
 
   @override
   AuthUser? get currentUser {
@@ -106,8 +108,11 @@ class FirebaseAuthProvider implements AuthProvider {
   }
 
   @override
-  void updatePassword(String password) async {
+  Future<void> updatePassword(String password) async {
     var firebaseUser = FirebaseAuth.instance.currentUser;
     await firebaseUser?.updatePassword(password);
   }
+
+  @override
+  Stream<User?> authStateChanges() => FirebaseAuth.instance.authStateChanges();
 }

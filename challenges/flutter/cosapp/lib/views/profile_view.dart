@@ -1,10 +1,9 @@
 import 'dart:io';
 
 import 'package:cosapp/services/sorage/storage_service.dart';
+import 'package:cosapp/views/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
-
-import 'package:cosapp/constants/routes.dart';
 import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -134,14 +133,6 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                     TextButton(
                       onPressed: () async {
-                        // if (_formKey.currentState!.validate()) {
-                        //   ScaffoldMessenger.of(context).showSnackBar(
-                        //     const SnackBar(
-                        //       content: Text('password match'),
-                        //     ),
-                        //   );
-                        // }
-
                         checkCurrentPasswordValid = await _auth
                             .validateCurrentPassword(_passwordController.text);
                         setState(() {});
@@ -269,10 +260,7 @@ class _ProfileViewState extends State<ProfileView> {
         final shouldLogOut = await showLogOutDialog(context);
         if (shouldLogOut) {
           await AuthService.firebase().logOut();
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            loginRoute,
-            (route) => false,
-          );
+          Navigator.of(context).popUntil((route) => route.isFirst);
         }
     }
   }

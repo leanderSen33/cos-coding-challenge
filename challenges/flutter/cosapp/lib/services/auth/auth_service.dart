@@ -8,6 +8,7 @@
 import 'package:cosapp/services/auth/auth_provider.dart';
 import 'package:cosapp/services/auth/auth_user.dart';
 import 'package:cosapp/services/auth/firebase_auth_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService implements AuthProvider {
   final AuthProvider provider;
@@ -33,8 +34,8 @@ class AuthService implements AuthProvider {
   @override
   Future<void> logOut() => provider.logOut();
 
-  @override
-  Future<void> initialize() => provider.initialize();
+  // @override
+  // Future<void> initialize() => provider.initialize();
 
   @override
   Future<void> sendPasswordReset({required String toEmail}) =>
@@ -46,7 +47,10 @@ class AuthService implements AuthProvider {
   }
 
   @override
-  void updatePassword(String password) {
+  Future<void> updatePassword(String password) async {
     provider.updatePassword(password);
   }
+
+  @override
+  Stream<User?> authStateChanges() => provider.authStateChanges();
 }

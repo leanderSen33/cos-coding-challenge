@@ -1,9 +1,8 @@
-import 'package:cosapp/constants/routes.dart';
-import 'package:cosapp/models/user_preferences.dart';
 import 'package:cosapp/services/database/firestore.dart';
+import 'package:cosapp/views/profile_view.dart';
 import 'package:flutter/material.dart';
 
-import '../services/auth/auth_service.dart';
+
 
 class VehicleInspectionOverviewView extends StatefulWidget {
   const VehicleInspectionOverviewView({Key? key}) : super(key: key);
@@ -17,13 +16,6 @@ class _VehicleInspectionOverviewViewState
     extends State<VehicleInspectionOverviewView> {
   final firestore = Firestore();
 
-  void setPhotoMethod() {
-    final id = AuthService.firebase().currentUser?.id;
-    final userPreference = UserPreferences(id: id!, preferCamera: true);
-
-    firestore.setPreferredPhotoMethod(userPreference);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,9 +24,9 @@ class _VehicleInspectionOverviewViewState
         actions: [
           IconButton(
               onPressed: () {
-                Navigator.pushNamed(
+                Navigator.push(
                   context,
-                  profileRoute,
+                  MaterialPageRoute(builder: (context) => const ProfileView()),
                 );
               },
               icon: const Icon(Icons.supervised_user_circle)),
@@ -56,9 +48,7 @@ class _VehicleInspectionOverviewViewState
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            setPhotoMethod();
-          });
+          setState(() {});
         },
       ),
     );
