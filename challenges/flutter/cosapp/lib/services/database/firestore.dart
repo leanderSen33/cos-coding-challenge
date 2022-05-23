@@ -1,9 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cosapp/models/inspections.dart';
+
 import 'dart:developer' as devtools show log;
 
 import 'package:cosapp/models/user_preferences.dart';
 
 class Firestore {
+  // Firestore({required this.uid});
+  // final String uid;
+
   final db = FirebaseFirestore.instance;
 
   String documentIdFromCurrentDate() => DateTime.now().toIso8601String();
@@ -37,8 +42,7 @@ class Firestore {
     return value;
   }
 
-
-  Future<List<String>> showListOfUserDocuments() async {
+  Future<List<String>> getListOfUserDocuments() async {
     List<String> docsList = [];
 
     final thing = await db.collection("users").get();
@@ -48,7 +52,37 @@ class Firestore {
       docsList.add(doc.id);
       devtools.log(doc.id);
     }
-
     return docsList;
+  }
+
+  Future<void> setInspection(Inspections inspections, String uid) => _setData(
+        path: 'vehicle_inspections/$uid/inspections/${inspections.id}',
+        data: inspections.toMap(),
+      );
+
+  Future<void> _setData(
+      {required String path, required Map<String, dynamic> data}) async {
+    final reference = FirebaseFirestore.instance.doc(path);
+    print('$path: $data');
+    await reference.set(data);
+  }
+
+  Stream<List<Inspections>> inspectionsStream(String uid) =>
+      collectionStream<Inspections>(
+        path: 'vehicle_inspections/$uid/inspections',
+        builder: (data, documentId) => Inspections.fromMap(data, documentId),
+      );
+
+  Stream<List<T>> collectionStream<T>({
+    required String path,
+    required T Function(Map<String, dynamic> data, String documentId) builder,
+  }) {
+    final reference = FirebaseFirestore.instance.collection(path);
+    final snaposhots = reference.snapshots();
+    return snaposhots.map((snapshot) => snapshot.docs
+        .map(
+          (snapshot) => builder(snapshot.data(), snapshot.id),
+        )
+        .toList());
   }
 }
