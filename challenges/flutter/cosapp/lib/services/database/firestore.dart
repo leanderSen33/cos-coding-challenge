@@ -6,28 +6,6 @@ import 'package:cosapp/models/user_preferences.dart';
 class Firestore {
   final db = FirebaseFirestore.instance;
 
-  final city = <String, String>{
-    "name": "Los Angeles",
-    "state": "CA",
-    "country": "USA"
-  };
-
-  //? Add a new document with a generated ID
-  //   void addNewDocument() {
-  //     db.collection("users").add(user).then((DocumentReference doc) =>
-  //         devtools.log('DocumentSnapshot added with ID: ${doc.id}'));
-  //     showListOfUserDocuments();
-  //   }
-
-  // set a document
-  void setDocument() {
-    db
-        .collection("users")
-        .doc("LA")
-        .set(city)
-        .onError((e, _) => devtools.log("Error writing document: $e"));
-  }
-
   String documentIdFromCurrentDate() => DateTime.now().toIso8601String();
 
 // set a document by giving the whole path:
@@ -59,7 +37,6 @@ class Firestore {
     return value;
   }
 
-  // showListOfUserDocuments() {}
 
   Future<List<String>> showListOfUserDocuments() async {
     List<String> docsList = [];
