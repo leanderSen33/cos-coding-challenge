@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 
 import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:cosapp/services/sorage/storage_service.dart';
-import 'package:cosapp/views/login_view.dart';
 
 import '../enums/menu_action.dart';
 import '../models/user_preferences.dart';
@@ -162,7 +161,7 @@ class _ProfileViewState extends State<ProfileView> {
                           Navigator.pop(context);
                         }
                       },
-                      child: const Text("Save Profile"),
+                      child: const Text("Save"),
                     ),
                   ],
                 ),
@@ -226,6 +225,7 @@ class _ProfileViewState extends State<ProfileView> {
                                     height: 10,
                                   ),
                                   Center(
+                                    //TODO: Use init state to populate the state of this widget before created
                                     child: FlutterSwitch(
                                       inactiveIcon: const Icon(Icons.folder),
                                       activeIcon: const Icon(

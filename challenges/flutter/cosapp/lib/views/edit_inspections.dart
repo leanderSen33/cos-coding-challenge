@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
 
@@ -88,20 +89,20 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
   Future<void> _submit() async {
     if (_validateAndSaveForm()) {
       try {
-        //   // Stream.first gets the first (most up-to-date) value on the stream
-        //   final inspections = await widget.database.inspectionsStream().first;
-        //   final allNames =
-        //       inspections.map((inspection) => inspection.name).toList();
-        //   // this will exclude the job name from the list of existing jobs (to avoid getting the error message when we want to edit a job, without changing the name)
-        //   if (widget.inspections != null) {
-        //     allNames.remove(widget.inspections?.name);
-        //   }
-        //   if (allNames.contains(_name)) {
-        //     showAlertDialog(context,
-        //         title: 'Name already used',
-        //         content: 'Please choose a different name',
-        //         defaultActionText: 'OK');
-        //   } else {
+        // // Stream.first gets the first (most up-to-date) value on the stream
+        // final inspections = await widget.database.inspectionsStream().first;
+        // final allNames =
+        //     inspections.map((inspection) => inspection.name).toList();
+        // // this will exclude the job name from the list of existing jobs (to avoid getting the error message when we want to edit a job, without changing the name)
+        // if (widget.inspections != null) {
+        //   allNames.remove(widget.inspections?.name);
+        // }
+        // if (allNames.contains(_name)) {
+        //   showAlertDialog(context,
+        //       title: 'Name already used',
+        //       content: 'Please choose a different name',
+        //       defaultActionText: 'OK');
+        // } else {
         // When we're creating new job id will be null, so we will use this documentIdF... Function,
         // when we're editing (job id will be not null) we will use the existing id
         final id = widget.inspections?.id ??
@@ -184,15 +185,17 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
         initialValue: _vehicleIdNumber != null ? "$_vehicleIdNumber" : null,
         decoration: const InputDecoration(labelText: 'Vehicle ID number'),
         onSaved: (value) => _vehicleIdNumber = value,
+        validator: (value) => vehicleIDNumberValidator(value!),
+        inputFormatters: [UpperCaseTextFormatter()],
       ),
       TextFormField(
         initialValue: _vehicleMake != null ? "$_vehicleMake" : null,
-        decoration: const InputDecoration(labelText: 'Vehicle make'),
+        decoration: const InputDecoration(labelText: 'Vehicle make (opt.)'),
         onSaved: (value) => _vehicleMake = value,
       ),
       TextFormField(
         initialValue: _vehicleModel != null ? "$_vehicleModel" : null,
-        decoration: const InputDecoration(labelText: 'Vehicle model'),
+        decoration: const InputDecoration(labelText: 'Vehicle model (opt.)'),
         onSaved: (value) => _vehicleModel = value,
       ),
       // ImageFormField(buttonBuilder: (){}, initializeFileAsImage: (File ) {  }, previewImageBuilder: (BuildContext , ) {  },),
@@ -206,5 +209,29 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
       //   ],
       // ),
     ];
+  }
+
+  String? vehicleIDNumberValidator(String value) {
+    if (value.isEmpty) {
+      return "This field cannot be empty";
+    } else if (value.length != 17) {
+      return "This number must contain 17 characters";
+    } else if (value.contains('I') ||
+        value.contains('O') ||
+        value.contains('U')) {
+      return "Cannot contain I, O, U characters";
+    }
+    return null;
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
   }
 }
