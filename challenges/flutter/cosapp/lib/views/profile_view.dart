@@ -1,20 +1,39 @@
+import 'dart:developer' as devtools show log;
 import 'dart:io';
 
-import 'package:cosapp/services/sorage/storage_service.dart';
-import 'package:cosapp/views/login_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
-import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import 'package:cosapp/services/auth/auth_service.dart';
+import 'package:cosapp/services/sorage/storage_service.dart';
+import 'package:cosapp/views/login_view.dart';
 
 import '../enums/menu_action.dart';
 import '../models/user_preferences.dart';
 import '../services/database/firestore.dart';
 import '../widgets/dialogs.dart';
-import 'dart:developer' as devtools show log;
 
 class ProfileView extends StatefulWidget {
-  const ProfileView({Key? key}) : super(key: key);
+  const ProfileView({
+    Key? key,
+    required this.firestore,
+  }) : super(key: key);
+
+  final Firestore firestore;
+
+  static Future<void> show(BuildContext context) async {
+    final database = Provider.of<Firestore>(context, listen: false);
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ProfileView(
+          firestore: database,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+  }
 
   @override
   State<ProfileView> createState() => _ProfileViewState();
@@ -24,7 +43,7 @@ class _ProfileViewState extends State<ProfileView> {
   late File file;
   final ImagePicker _picker = ImagePicker();
   final storage = StorageService();
-  final firestore = Firestore();
+  // final firestore = Firestore(uid: );
   final _auth = AuthService.firebase();
   String downloadedURL = 'https://dummyimage.com/300.png/09f/fff';
   bool isCameraMethodPreferred = false;
@@ -71,7 +90,7 @@ class _ProfileViewState extends State<ProfileView> {
                             builder: (BuildContext context,
                                 AsyncSnapshot<String> snapshot) {
                               return CircleAvatar(
-                                radius: 50.0,
+                                radius: 70.0,
                                 backgroundImage: NetworkImage(snapshot.data ??
                                     'https://dummyimage.com/300.png/09f/fff'),
                               );
@@ -195,8 +214,9 @@ class _ProfileViewState extends State<ProfileView> {
                       Column(
                         children: [
                           FutureBuilder<bool>(
-                            future: firestore.getUpdatedPreferredPhotoMethod(
-                                _auth.currentUser!.id),
+                            future: widget.firestore
+                                .getUpdatedPreferredPhotoMethod(
+                                    _auth.currentUser!.id),
                             builder:
                                 (BuildContext context, AsyncSnapshot snapshot) {
                               return Column(
@@ -226,7 +246,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       onToggle: (value) {
                                         setState(() {
                                           isCameraMethodPreferred = value;
-                                          setPhotoMethod();
+                                          setPhotoMethod(widget.firestore);
                                         });
                                       },
                                     ),
@@ -247,7 +267,7 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  void setPhotoMethod() {
+  void setPhotoMethod(Firestore firestore) {
     devtools.log('setPhotoMethod\'s been called');
     final userPreference = UserPreferences(
         id: _auth.currentUser!.id, preferCamera: isCameraMethodPreferred);

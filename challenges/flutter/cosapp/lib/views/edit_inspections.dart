@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -6,27 +7,24 @@ import 'package:provider/provider.dart';
 import '../models/inspections.dart';
 import '../services/database/firestore.dart';
 
-// We need to create the New Inspections page, so we will have some state.
-// We have 3 options, we can create a Stateful widget with local variables.
-
-// a Data type + Change notifier, or a BLoC. For now we'll make it simple, and go
-// with a Stateful widget.
+import '../widgets/show_alert_dialog.dart';
+import '../widgets/show_exception_dialog.dart';
 
 class EditInspectionsPage extends StatefulWidget {
-  const EditInspectionsPage({Key? key, required this.database, required this.inspections})
+  const EditInspectionsPage(
+      {Key? key, required this.database, required this.inspections})
       : super(key: key);
 
   final Inspections? inspections;
-
   final Firestore database;
-  // Code so that we can present this page when the FAB is pressed.
-  // this push a new route inside the navigation stack
-  static Future<void> show(BuildContext context, {Inspections? job}) async {
+
+  static Future<void> show(BuildContext context,
+      {Inspections? inspections}) async {
     final database = Provider.of<Firestore>(context, listen: false);
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => EditInspectionsPage(
-          inspections: job,
+          inspections: inspections,
           database: database,
         ),
         fullscreenDialog: true,
@@ -39,35 +37,44 @@ class EditInspectionsPage extends StatefulWidget {
 }
 
 class _EditInspectionsPageState extends State<EditInspectionsPage> {
-  final FocusNode _nameFocusNode = FocusNode();
-  final FocusNode _ratePerHourFocusNode = FocusNode();
+  // final FocusNode _nameFocusNode = FocusNode();
+  // final FocusNode _ratePerHourFocusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
 
-  String? _name;
-  int? _ratePerHour;
+  // String? _name;
+  // int? _ratePerHour;
 
-  void _nameEditingComplete() {
-    final newFocus = _formKey.currentState!.validate()
-        ? _ratePerHourFocusNode
-        : _nameFocusNode;
-    FocusScope.of(context).requestFocus(newFocus);
-  }
+  Timestamp? _inspectionDate;
+  String? _vehicleIdNumber;
+  String? _vehicleMake;
+  String? _vehicleModel;
+  String? _photo;
+
+  // void _nameEditingComplete() {
+  //   final newFocus = _formKey.currentState!.validate()
+  //       ? _ratePerHourFocusNode
+  //       : _nameFocusNode;
+  //   FocusScope.of(context).requestFocus(newFocus);
+  // }
 
   @override
   void initState() {
     super.initState();
     if (widget.inspections != null) {
-      _name = widget.inspections?.name;
-      _ratePerHour = widget.inspections?.ratePerHour;
+      _inspectionDate = widget.inspections?.inspectionDate;
+      _vehicleIdNumber = widget.inspections?.vehicleIdNumber;
+      _vehicleMake = widget.inspections?.vehicleMake;
+      _vehicleModel = widget.inspections?.vehicleModel;
+      _photo = widget.inspections?.photo;
     }
   }
 
-  @override
-  void dispose() {
-    _nameFocusNode.dispose();
-    _ratePerHourFocusNode.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _nameFocusNode.dispose();
+  //   _ratePerHourFocusNode.dispose();
+  //   super.dispose();
+  // }
 
   bool _validateAndSaveForm() {
     final form = _formKey.currentState;
@@ -81,26 +88,34 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
   Future<void> _submit() async {
     if (_validateAndSaveForm()) {
       try {
-        // Stream.first gets the first (most up-to-date) value on the stream
-        final jobs = await widget.database.jobsStream().first;
-        final allNames = jobs.map((job) => job.name).toList();
-        // this will exclude the job name from the list of existing jobs (to avoid getting the error message when we want to edit a job, without changing the name)
-        if (widget.inspections != null) {
-          allNames.remove(widget.inspections?.name);
-        }
-        if (allNames.contains(_name)) {
-          showAlertDialog(context,
-              title: 'Name already used',
-              content: 'Please choose a different name',
-              defaultActionText: 'OK');
-        } else {
-          // When we're creating new job id will be null, so we will use this documentIdF... Function,
-          // when we're editing (job id will be not null) we will use the existing id
-          final id = widget.inspections?.id ?? documentIdFromCurrentDate();
-          final job = Inspections(name: _name, ratePerHour: _ratePerHour, id: id);
-          await widget.database.setInspections(job);
-          Navigator.of(context).pop();
-        }
+        //   // Stream.first gets the first (most up-to-date) value on the stream
+        //   final inspections = await widget.database.inspectionsStream().first;
+        //   final allNames =
+        //       inspections.map((inspection) => inspection.name).toList();
+        //   // this will exclude the job name from the list of existing jobs (to avoid getting the error message when we want to edit a job, without changing the name)
+        //   if (widget.inspections != null) {
+        //     allNames.remove(widget.inspections?.name);
+        //   }
+        //   if (allNames.contains(_name)) {
+        //     showAlertDialog(context,
+        //         title: 'Name already used',
+        //         content: 'Please choose a different name',
+        //         defaultActionText: 'OK');
+        //   } else {
+        // When we're creating new job id will be null, so we will use this documentIdF... Function,
+        // when we're editing (job id will be not null) we will use the existing id
+        final id = widget.inspections?.id ??
+            widget.database.documentIdFromCurrentDate();
+        final inspection = Inspections(
+          id: id,
+          inspectionDate: _inspectionDate!,
+          vehicleIdNumber: _vehicleIdNumber!,
+          vehicleMake: _vehicleMake,
+          vehicleModel: _vehicleModel,
+        );
+        await widget.database.setInspection(inspection);
+        Navigator.of(context).pop();
+        // }
       } on FirebaseException catch (e) {
         showExceptionAlertDialog(context,
             title: 'Operation failed', exception: e);
@@ -123,7 +138,9 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
           )
         ],
         elevation: 2.0,
-        title: Text(widget.inspections == null ? 'New Inspections' : 'Edit Inspections'),
+        title: Text(widget.inspections == null
+            ? 'New Inspections'
+            : 'Edit Inspections'),
       ),
       body: _buildContents(),
     );
@@ -148,35 +165,46 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
       key: _formKey,
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: _buildFormChildre()),
+          children: _buildFormChildren()),
     );
   }
 
-  List<Widget> _buildFormChildre() {
+  List<Widget> _buildFormChildren() {
     return [
-      // NAME
-      TextFormField(
-        initialValue: _name,
-        onEditingComplete: _nameEditingComplete,
-        focusNode: _nameFocusNode,
-        decoration: const InputDecoration(labelText: 'Inspections Name'),
-        onSaved: (value) => _name = value!,
-        validator: (value) => value!.isNotEmpty ? null : 'Name can\'t be empty',
+      InputDatePickerFormField(
+        errorInvalidText: 'Please try again. Date cannot be in the future',
+        fieldLabelText: 'Inspection Date',
+        onDateSaved: (value) => _inspectionDate = Timestamp.fromDate(value),
+        initialDate: DateTime.now(),
+        firstDate: DateTime(DateTime.now().year - 10),
+        lastDate: DateTime.now(),
       ),
-      // RATE PER HOUR
+
       TextFormField(
-        initialValue: _ratePerHour != null ? "$_ratePerHour" : null,
-        onEditingComplete: _submit,
-        focusNode: _ratePerHourFocusNode,
-        decoration: const InputDecoration(labelText: 'Rate per hour'),
-        // we must use tryParse instead of parse, because .parse returns an exception when the operation fails.
-        // otoh, tryParse returns null if can't parse the value. And we handle that case with the ?? operator.
-        onSaved: (value) => _ratePerHour = int.tryParse(value!) ?? 0,
-        keyboardType: const TextInputType.numberWithOptions(
-          signed: false,
-          decimal: false,
-        ),
-      )
+        initialValue: _vehicleIdNumber != null ? "$_vehicleIdNumber" : null,
+        decoration: const InputDecoration(labelText: 'Vehicle ID number'),
+        onSaved: (value) => _vehicleIdNumber = value,
+      ),
+      TextFormField(
+        initialValue: _vehicleMake != null ? "$_vehicleMake" : null,
+        decoration: const InputDecoration(labelText: 'Vehicle make'),
+        onSaved: (value) => _vehicleMake = value,
+      ),
+      TextFormField(
+        initialValue: _vehicleModel != null ? "$_vehicleModel" : null,
+        decoration: const InputDecoration(labelText: 'Vehicle model'),
+        onSaved: (value) => _vehicleModel = value,
+      ),
+      // ImageFormField(buttonBuilder: (){}, initializeFileAsImage: (File ) {  }, previewImageBuilder: (BuildContext , ) {  },),
+      // Row(
+      //   children: [
+      //     const Text('photo'),
+      //     IconButton(
+      //       onPressed: () {},
+      //       icon: const Icon(Icons.photo),
+      //     ),
+      //   ],
+      // ),
     ];
   }
 }

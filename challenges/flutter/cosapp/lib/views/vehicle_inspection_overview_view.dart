@@ -3,6 +3,9 @@ import 'package:cosapp/services/database/firestore.dart';
 import 'package:cosapp/views/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer' as devtools show log;
+
+import 'edit_inspections.dart';
 
 class VehicleInspectionOverviewView extends StatefulWidget {
   const VehicleInspectionOverviewView({Key? key}) : super(key: key);
@@ -14,8 +17,6 @@ class VehicleInspectionOverviewView extends StatefulWidget {
 
 class _VehicleInspectionOverviewViewState
     extends State<VehicleInspectionOverviewView> {
-  final firestore = Firestore();
-
   @override
   Widget build(BuildContext context) {
     final database = Provider.of<Firestore>(context, listen: false);
@@ -24,12 +25,7 @@ class _VehicleInspectionOverviewViewState
         title: const Text('Overview'),
         actions: [
           IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfileView()),
-                );
-              },
+              onPressed: () => ProfileView.show(context),
               icon: const Icon(Icons.supervised_user_circle)),
         ],
       ),
@@ -38,48 +34,51 @@ class _VehicleInspectionOverviewViewState
         builder:
             (BuildContext context, AsyncSnapshot<List<Inspections>> snapshot) {
           if (snapshot.hasData) {
-            final jobs = snapshot.data;
-            final children = jobs
+            final inspections = snapshot.data;
+            final children = inspections
                 ?.map(
-                  (job) => InspectionsListTile(
-                    inspections: job,
-                    onTap: () =>
-                        EditInspectionsPage.show(context, inspections: job),
+                  (inspection) => InspectionsListTile(
+                    inspections: inspection,
+                    onTap: () => EditInspectionsPage.show(context,
+                        inspections: inspection),
                   ),
                 )
                 .toList();
-            return (ListView(
-              // crossAxisAlignment: CrossAxisAlignment.stretch,
+            return ListView(
               children: children!,
-            ));
+            );
           }
           if (snapshot.hasError) {
-            return const Center(
-              child: Text('There is some error'),
+            devtools.log(snapshot.error.toString());
+            return Center(
+              child: Text('${snapshot.error}'),
             );
           }
           return const Center(child: CircularProgressIndicator());
         },
       ),
-      // body: FutureBuilder<List<String>>(
-      //   future: firestore.showListOfUserDocuments(),
-      //   builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-      //     var list = snapshot.data?.map((item) => Text(item)).toList();
-
-      //     return (ListView(
-      //       children: list ?? [const Text('Loading')],
-      //     ));
-
-      //     // for (var d in asyncSnapshot.data) {
-      //     //   return Text(d);
-      //     // }
-      //   },
-      // ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {});
-        },
+        onPressed: () => EditInspectionsPage.show(context),
+        child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class InspectionsListTile extends StatelessWidget {
+  const InspectionsListTile(
+      {Key? key, required this.inspections, required this.onTap})
+      : super(key: key);
+
+  final Inspections inspections;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(inspections.vehicleIdNumber),
+      trailing: const Icon(Icons.arrow_circle_right_outlined),
+      onTap: onTap,
     );
   }
 }

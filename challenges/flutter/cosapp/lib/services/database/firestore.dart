@@ -6,8 +6,8 @@ import 'dart:developer' as devtools show log;
 import 'package:cosapp/models/user_preferences.dart';
 
 class Firestore {
-  // Firestore({required this.uid});
-  // final String uid;
+  Firestore({required this.uid});
+  final String uid;
 
   final db = FirebaseFirestore.instance;
 
@@ -55,7 +55,7 @@ class Firestore {
     return docsList;
   }
 
-  Future<void> setInspection(Inspections inspections, String uid) => _setData(
+  Future<void> setInspection(Inspections inspections) => _setData(
         path: 'vehicle_inspections/$uid/inspections/${inspections.id}',
         data: inspections.toMap(),
       );
@@ -67,7 +67,7 @@ class Firestore {
     await reference.set(data);
   }
 
-  Stream<List<Inspections>> inspectionsStream(String uid) =>
+  Stream<List<Inspections>> inspectionsStream() =>
       collectionStream<Inspections>(
         path: 'vehicle_inspections/$uid/inspections',
         builder: (data, documentId) => Inspections.fromMap(data, documentId),
