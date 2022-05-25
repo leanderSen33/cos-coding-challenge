@@ -137,13 +137,14 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
           onPressed: () async {
             if (_validateAndSaveForm()) {
               devtools.log(_validateAndSaveForm().toString());
-              Navigator.pop(context);
+              _submit();
             } else {
               showDialog(
-                  context: context,
-                  builder: (_) => const AlertDialog(
-                        title: Text('Please fill out all required fields'),
-                      ));
+                context: context,
+                builder: (_) => const AlertDialog(
+                  title: Text('Please fill out all required fields'),
+                ),
+              );
             }
           },
         ),

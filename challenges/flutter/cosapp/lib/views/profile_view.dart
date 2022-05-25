@@ -39,19 +39,17 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  late File file;
-  final ImagePicker _picker = ImagePicker();
+  // late File file;
+  // final ImagePicker _picker = ImagePicker();
   final storage = StorageService();
-  // final firestore = Firestore(uid: );
   final _auth = AuthService.firebase();
-  String downloadedURL = 'https://dummyimage.com/300.png/09f/fff';
-  bool isCameraMethodPreferred = false;
-
-  bool checkCurrentPasswordValid = true;
   final _passwordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _repeatPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String downloadedURL = 'https://dummyimage.com/300.png/09f/fff';
+  bool isCameraMethodPreferred = false;
+  bool checkCurrentPasswordValid = true;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +82,7 @@ class _ProfileViewState extends State<ProfileView> {
                             icon: const Icon(Icons.arrow_back_rounded),
                           ),
                           FutureBuilder<String>(
-                            future: storage.getFile(),
+                            future: storage.getPhotoProfileURL(),
                             builder: (BuildContext context,
                                 AsyncSnapshot<String> snapshot) {
                               return CircleAvatar(
@@ -173,41 +171,18 @@ class _ProfileViewState extends State<ProfileView> {
                   child: Column(
                     children: <Widget>[
                       TextButton(
+                        child: const Text(
+                          'Change photo',
+                        ),
                         style: TextButton.styleFrom(
                           primary: Colors.white,
                           backgroundColor: Colors.grey,
                         ),
                         onPressed: () async {
-                          try {
-                            final XFile? image = await _picker.pickImage(
-                                source: isCameraMethodPreferred
-                                    ? ImageSource.camera
-                                    : ImageSource.gallery);
-
-                            if (image == null) {
-                              devtools.log('No image was selected');
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No file selected'),
-                                ),
-                              );
-                            } else {
-                              devtools.log(
-                                  'Path of the selected image: ${image.path}');
-                              file = File(image.path);
-
-                              await storage.uploadFile(file);
-                              downloadedURL = await storage.getFile();
-                              devtools.log('downloaded URL: $downloadedURL');
-                              setState(() {});
-                            }
-                          } catch (e) {
-                            devtools.log(e.toString());
-                          }
+                          await storage.changePhoto(
+                              context, isCameraMethodPreferred);
+                          setState(() {});
                         },
-                        child: const Text(
-                          'Change photo',
-                        ),
                       ),
                       Column(
                         children: [
@@ -265,6 +240,35 @@ class _ProfileViewState extends State<ProfileView> {
       ),
     );
   }
+
+// TODO: Place this function in the storage_service
+  // void changePhoto() async {
+  //   try {
+  //     final XFile? image = await _picker.pickImage(
+  //         source: isCameraMethodPreferred
+  //             ? ImageSource.camera
+  //             : ImageSource.gallery);
+
+  //     if (image == null) {
+  //       devtools.log('No image was selected');
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('No file selected'),
+  //         ),
+  //       );
+  //     } else {
+  //       devtools.log('Path of the selected image: ${image.path}');
+  //       file = File(image.path);
+
+  //       await storage.uploadFile(file);
+  //       downloadedURL = await storage.getPhotoProfileURL();
+  //       devtools.log('downloaded URL: $downloadedURL');
+  //       setState(() {});
+  //     }
+  //   } catch (e) {
+  //     devtools.log(e.toString());
+  //   }
+  // }
 
   void setPhotoMethod(Firestore firestore) {
     devtools.log('setPhotoMethod\'s been called');
