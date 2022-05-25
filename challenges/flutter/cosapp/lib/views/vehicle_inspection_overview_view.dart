@@ -38,7 +38,10 @@ class _VehicleInspectionOverviewViewState
           if (snapshot.hasData) {
             final inspections = snapshot.data;
 
-            return ListTileInspections(inspections: inspections);
+            return ListTileInspections(
+              inspections: inspections,
+              // onTap: () => EditInspectionsPage.show(context, inspections: inspections),
+            );
           }
           if (snapshot.hasError) {
             devtools.log(snapshot.error.toString());
@@ -75,6 +78,8 @@ class ListTileInspections extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
           child: ListTile(
+            onTap: () => EditInspectionsPage.show(context,
+                inspections: inspections![reversedIndex]),
             tileColor: Colors.amber,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),

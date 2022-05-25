@@ -8,8 +8,10 @@ import 'package:provider/provider.dart';
 import '../models/inspections.dart';
 import '../services/database/firestore.dart';
 
+import '../widgets/dialogs.dart';
 import '../widgets/show_alert_dialog.dart';
 import '../widgets/show_exception_dialog.dart';
+import 'dart:developer' as devtools show log;
 
 class EditInspectionsPage extends StatefulWidget {
   const EditInspectionsPage(
@@ -89,6 +91,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
   Future<void> _submit() async {
     if (_validateAndSaveForm()) {
       try {
+        //TODO: Finish this
         // // Stream.first gets the first (most up-to-date) value on the stream
         // final inspections = await widget.database.inspectionsStream().first;
         // final allNames =
@@ -129,6 +132,21 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.cancel),
+          onPressed: () async {
+            if (_validateAndSaveForm()) {
+              devtools.log(_validateAndSaveForm().toString());
+              Navigator.pop(context);
+            } else {
+              showDialog(
+                  context: context,
+                  builder: (_) => const AlertDialog(
+                        title: Text('Please fill out all required fields'),
+                      ));
+            }
+          },
+        ),
         actions: [
           TextButton(
             child: const Text(

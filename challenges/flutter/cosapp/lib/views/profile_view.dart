@@ -60,7 +60,6 @@ class _ProfileViewState extends State<ProfileView> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Column(
-          // crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             if (!isKeyboard)
               Expanded(
