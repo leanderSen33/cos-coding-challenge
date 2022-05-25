@@ -11,16 +11,17 @@ class Inspections {
   });
 
   final String id;
-  final Timestamp inspectionDate;
+  final DateTime inspectionDate;
   final String vehicleIdNumber;
   final String? vehicleMake;
   final String? vehicleModel;
   final String? photo;
 
   factory Inspections.fromMap(Map<String, dynamic> data, String documentId) {
-    final Timestamp inspectionDate = data['inspection_date'] ?? Timestamp(9, 9);
-    final String vehicleNumber = data['vehicle_make'] ?? '';
-    final String vehicleMake = data['vehicle_number'];
+    Timestamp inspectionDateFromFirebase = data['inspection_date'];
+    final DateTime inspectionDate = inspectionDateFromFirebase.toDate();
+    final String vehicleNumber = data['vehicle_number'] ?? '';
+    final String vehicleMake = data['vehicle_make'];
     final String? vehicleModel = data['vehicle_model'];
     final String? photo = data['photo'];
 
@@ -34,7 +35,7 @@ class Inspections {
   }
 
   Map<String, dynamic> toMap() => {
-        'inspection_date': inspectionDate,
+        'inspection_date': Timestamp.fromDate(inspectionDate),
         'vehicle_number': vehicleIdNumber,
         'vehicle_make': vehicleMake,
         'vehicle_model': vehicleModel,

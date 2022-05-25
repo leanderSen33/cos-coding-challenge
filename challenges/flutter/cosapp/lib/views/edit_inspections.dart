@@ -45,7 +45,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
   // String? _name;
   // int? _ratePerHour;
 
-  Timestamp? _inspectionDate;
+  DateTime? _inspectionDate;
   String? _vehicleIdNumber;
   String? _vehicleMake;
   String? _vehicleModel;
@@ -175,7 +175,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
       InputDatePickerFormField(
         errorInvalidText: 'Please try again. Date cannot be in the future',
         fieldLabelText: 'Inspection Date',
-        onDateSaved: (value) => _inspectionDate = Timestamp.fromDate(value),
+        onDateSaved: (value) => _inspectionDate = value,
         initialDate: DateTime.now(),
         firstDate: DateTime(DateTime.now().year - 10),
         lastDate: DateTime.now(),
