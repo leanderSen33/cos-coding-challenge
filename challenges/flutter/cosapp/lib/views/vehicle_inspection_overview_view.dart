@@ -94,10 +94,12 @@ class ListTileInspections extends StatelessWidget {
                   ),
                 ),
               ),
-              child: const Icon(
-                Icons.autorenew,
-                color: Color.fromARGB(255, 138, 93, 93),
-              ),
+              child: inspections![reversedIndex].photo == null
+                  ? const Icon(
+                      Icons.autorenew,
+                      color: Color.fromARGB(255, 138, 93, 93),
+                    )
+                  : Image.network(inspections![reversedIndex].photo!),
             ),
             title: Text(
               'VIN: ${inspections![reversedIndex].vehicleIdNumber}',

@@ -39,8 +39,6 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  // late File file;
-  // final ImagePicker _picker = ImagePicker();
   final storage = StorageService();
   final _auth = AuthService.firebase();
   final _passwordController = TextEditingController();
@@ -179,7 +177,7 @@ class _ProfileViewState extends State<ProfileView> {
                           backgroundColor: Colors.grey,
                         ),
                         onPressed: () async {
-                          await storage.changePhoto(
+                          await storage.changeProfilePhoto(
                               context, isCameraMethodPreferred);
                           setState(() {});
                         },

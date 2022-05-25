@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../models/inspections.dart';
 import '../services/database/firestore.dart';
 
+import '../services/sorage/storage_service.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/show_alert_dialog.dart';
 import '../widgets/show_exception_dialog.dart';
@@ -46,12 +47,13 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
 
   // String? _name;
   // int? _ratePerHour;
-
+  final storage = StorageService();
   DateTime? _inspectionDate;
   String? _vehicleIdNumber;
   String? _vehicleMake;
   String? _vehicleModel;
   String? _photo;
+  String? photoCarURL;
 
   // void _nameEditingComplete() {
   //   final newFocus = _formKey.currentState!.validate()
@@ -116,7 +118,9 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
           vehicleIdNumber: _vehicleIdNumber!,
           vehicleMake: _vehicleMake,
           vehicleModel: _vehicleModel,
+          photo: photoCarURL,
         );
+        devtools.log('vehicle photo ${inspection.photo}');
         await widget.database.setInspection(inspection);
         Navigator.of(context).pop();
         // }
@@ -137,7 +141,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
           onPressed: () async {
             if (_validateAndSaveForm()) {
               devtools.log(_validateAndSaveForm().toString());
-              _submit();
+              Navigator.of(context).pop();
             } else {
               showDialog(
                 context: context,
@@ -199,7 +203,6 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
         firstDate: DateTime(DateTime.now().year - 10),
         lastDate: DateTime.now(),
       ),
-
       TextFormField(
         initialValue: _vehicleIdNumber != null ? "$_vehicleIdNumber" : null,
         decoration: const InputDecoration(labelText: 'Vehicle ID number'),
@@ -217,16 +220,17 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
         decoration: const InputDecoration(labelText: 'Vehicle model (opt.)'),
         onSaved: (value) => _vehicleModel = value,
       ),
-      // ImageFormField(buttonBuilder: (){}, initializeFileAsImage: (File ) {  }, previewImageBuilder: (BuildContext , ) {  },),
-      // Row(
-      //   children: [
-      //     const Text('photo'),
-      //     IconButton(
-      //       onPressed: () {},
-      //       icon: const Icon(Icons.photo),
-      //     ),
-      //   ],
-      // ),
+      Row(
+        children: [
+          const Text('choose a photo (opt.)'),
+          IconButton(
+            onPressed: () async {
+              photoCarURL = await storage.addCarPhotoAndGetBackItsURL(context);
+            },
+            icon: const Icon(Icons.photo),
+          ),
+        ],
+      ),
     ];
   }
 
