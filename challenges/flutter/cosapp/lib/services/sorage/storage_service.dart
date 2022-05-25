@@ -14,7 +14,6 @@ class StorageService {
   final storageRef = FirebaseStorage.instance;
   late File file;
 
-  // TODO: What is the problem with this? why should I use getIt or other dependency injection method?
   final currentUser = AuthService.firebase().currentUser;
 
   // in order to give each user access to its specific data, we will use the user id.
