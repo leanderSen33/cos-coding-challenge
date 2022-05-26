@@ -36,8 +36,8 @@ class StorageService {
     return results;
   }
 
-  Future<String> addCarPhotoAndGetBackItsURL(BuildContext context) async {
-    String downloadedURL = '';
+  Future<String?> addCarPhotoAndGetBackItsURL(BuildContext context) async {
+    String? downloadedURL;
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -49,7 +49,7 @@ class StorageService {
           ),
         );
       } else {
-        // devtools.log('Path of the selected image: ${image.path}');
+        devtools.log('Path of the selected image: ${image.path}');
         file = File(image.path);
         final photoID = await uploadCarPhotoFile(file);
         devtools.log('photoID: $photoID');

@@ -1,4 +1,4 @@
-import 'package:cosapp/widgets/custom_text_field.dart';
+import 'package:cosapp/widgets/custom_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:provider/provider.dart';
@@ -205,7 +205,6 @@ class _ProfileViewState extends State<ProfileView> {
                               await _auth.validateCurrentPassword(
                                   _passwordController.text);
                           setState(() {});
-
                           if (_formKey.currentState!.validate() &&
                               checkCurrentPasswordValid) {
                             _auth.updatePassword(_newPasswordController.text);

@@ -9,8 +9,6 @@ import '../models/inspections.dart';
 import '../services/database/firestore.dart';
 
 import '../services/sorage/storage_service.dart';
-import '../widgets/dialogs.dart';
-import '../widgets/show_alert_dialog.dart';
 import '../widgets/show_exception_dialog.dart';
 import 'dart:developer' as devtools show log;
 
@@ -52,15 +50,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
   String? _vehicleIdNumber;
   String? _vehicleMake;
   String? _vehicleModel;
-  String? _photo;
-  String? photoCarURL;
-
-  // void _nameEditingComplete() {
-  //   final newFocus = _formKey.currentState!.validate()
-  //       ? _ratePerHourFocusNode
-  //       : _nameFocusNode;
-  //   FocusScope.of(context).requestFocus(newFocus);
-  // }
+  String? _photoCarURL;
 
   @override
   void initState() {
@@ -70,7 +60,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
       _vehicleIdNumber = widget.inspections?.vehicleIdNumber;
       _vehicleMake = widget.inspections?.vehicleMake;
       _vehicleModel = widget.inspections?.vehicleModel;
-      _photo = widget.inspections?.photo;
+      _photoCarURL = widget.inspections?.photo;
     }
   }
 
@@ -93,23 +83,6 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
   Future<void> _submit() async {
     if (_validateAndSaveForm()) {
       try {
-        //TODO: Finish this
-        // // Stream.first gets the first (most up-to-date) value on the stream
-        // final inspections = await widget.database.inspectionsStream().first;
-        // final allNames =
-        //     inspections.map((inspection) => inspection.name).toList();
-        // // this will exclude the job name from the list of existing jobs (to avoid getting the error message when we want to edit a job, without changing the name)
-        // if (widget.inspections != null) {
-        //   allNames.remove(widget.inspections?.name);
-        // }
-        // if (allNames.contains(_name)) {
-        //   showAlertDialog(context,
-        //       title: 'Name already used',
-        //       content: 'Please choose a different name',
-        //       defaultActionText: 'OK');
-        // } else {
-        // When we're creating new job id will be null, so we will use this documentIdF... Function,
-        // when we're editing (job id will be not null) we will use the existing id
         final id = widget.inspections?.id ??
             widget.database.documentIdFromCurrentDate();
         final inspection = Inspections(
@@ -118,7 +91,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
           vehicleIdNumber: _vehicleIdNumber!,
           vehicleMake: _vehicleMake,
           vehicleModel: _vehicleModel,
-          photo: photoCarURL,
+          photo: _photoCarURL,
         );
         devtools.log('vehicle photo ${inspection.photo}');
         await widget.database.setInspection(inspection);
@@ -133,40 +106,43 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.cancel),
-          onPressed: () async {
-            if (_validateAndSaveForm()) {
-              devtools.log(_validateAndSaveForm().toString());
-              Navigator.of(context).pop();
-            } else {
-              showDialog(
-                context: context,
-                builder: (_) => const AlertDialog(
-                  title: Text('Please fill out all required fields'),
-                ),
-              );
-            }
-          },
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.grey[200],
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.cancel),
+            onPressed: () async {
+              if (_validateAndSaveForm()) {
+                devtools.log(_validateAndSaveForm().toString());
+                Navigator.of(context).pop();
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (_) => const AlertDialog(
+                    title: Text('Please fill out all required fields'),
+                  ),
+                );
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              child: const Text(
+                'Save',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: _submit,
+            )
+          ],
+          elevation: 2.0,
+          title: Text(widget.inspections == null
+              ? 'New Inspection'
+              : 'Edit Inspection'),
         ),
-        actions: [
-          TextButton(
-            child: const Text(
-              'Save',
-              style: TextStyle(color: Colors.white),
-            ),
-            onPressed: _submit,
-          )
-        ],
-        elevation: 2.0,
-        title: Text(widget.inspections == null
-            ? 'New Inspections'
-            : 'Edit Inspections'),
+        body: _buildContents(),
       ),
-      body: _buildContents(),
     );
   }
 
@@ -196,10 +172,10 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
   List<Widget> _buildFormChildren() {
     return [
       InputDatePickerFormField(
+        initialDate: DateTime.now(),
         errorInvalidText: 'Please try again. Date cannot be in the future',
         fieldLabelText: 'Inspection Date',
         onDateSaved: (value) => _inspectionDate = value,
-        initialDate: DateTime.now(),
         firstDate: DateTime(DateTime.now().year - 10),
         lastDate: DateTime.now(),
       ),
@@ -226,7 +202,7 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
           const Text('choose a photo (optional)'),
           IconButton(
             onPressed: () async {
-              photoCarURL = await storage.addCarPhotoAndGetBackItsURL(context);
+              _photoCarURL = await storage.addCarPhotoAndGetBackItsURL(context);
             },
             icon: const Icon(Icons.photo),
           ),
@@ -237,12 +213,15 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
 
   String? vehicleIDNumberValidator(String value) {
     if (value.isEmpty) {
+      setState(() {});
       return "This field cannot be empty";
     } else if (value.length != 17) {
+      setState(() {});
       return "This number must contain 17 characters";
     } else if (value.contains('I') ||
         value.contains('O') ||
         value.contains('U')) {
+      setState(() {});
       return "Cannot contain I, O, U characters";
     }
     return null;

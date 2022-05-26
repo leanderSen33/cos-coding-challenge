@@ -1,7 +1,7 @@
 import 'package:cosapp/services/database/firestore.dart';
 import 'package:cosapp/views/login_view.dart';
 
-import 'package:cosapp/views/vehicle_inspection_overview_view.dart';
+import 'package:cosapp/views/vehicle_inspections_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

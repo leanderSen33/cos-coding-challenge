@@ -4,7 +4,7 @@ import 'package:cosapp/widgets/dialogs.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
 
-import '../widgets/custom_text_field.dart';
+import '../widgets/custom_fields.dart';
 
 class LogInView extends StatefulWidget {
   const LogInView({Key? key, required this.title}) : super(key: key);
