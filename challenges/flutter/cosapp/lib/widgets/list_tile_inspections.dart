@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/inspections.dart';
 import 'package:intl/intl.dart';
 import '../views/edit_inspections.dart';
-import 'dart:developer' as devtools show log;
+// import 'dart:developer' as devtools show log;
 
 class ListTileInspections extends StatelessWidget {
   const ListTileInspections({
@@ -17,38 +17,61 @@ class ListTileInspections extends StatelessWidget {
     return ListView.builder(
       itemBuilder: ((context, index) {
         int reversedIndex = inspections!.length - 1 - index;
-        devtools
-            .log('Vehicle Make: ${inspections?[reversedIndex].vehicleMake}');
+
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-          child: Material(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 7,
-            child: ListTile(
-              minLeadingWidth: 65,
-              isThreeLine: true,
-              tileColor: Colors.grey[200],
-              contentPadding: const EdgeInsets.all(0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              onTap: () => EditInspectionsPage.show(
-                context,
-                inspections: inspections![reversedIndex],
-              ),
-              leading: LeadingWidget(
-                inspections: inspections,
-                reversedIndex: reversedIndex,
-              ),
-              title: TitleWidget(
-                inspections: inspections,
-                reversedIndex: reversedIndex,
-              ),
-              subtitle: SubtitleWidget(
-                inspections: inspections,
-                reversedIndex: reversedIndex,
+          padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 15.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(7),
+            child: Material(
+              child: InkWell(
+                onTap: () => EditInspectionsPage.show(
+                  context,
+                  inspections: inspections![reversedIndex],
+                ),
+                child: Ink(
+                  height: 90,
+                  color: Colors.grey[200],
+                  child: Row(
+                    children: <Widget>[
+                      Container(
+                        color: Colors.red,
+                        width: 90,
+                        height: 90,
+                        child: LeadingWidget(
+                          inspections: inspections,
+                          reversedIndex: reversedIndex,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'VIN: ${inspections![reversedIndex].vehicleIdNumber}',
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              '${inspections![reversedIndex].vehicleMake!}  ${inspections![reversedIndex].vehicleModel!}',
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              DateFormat.yMd().format(
+                                  inspections![reversedIndex].inspectionDate),
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -58,6 +81,45 @@ class ListTileInspections extends StatelessWidget {
     );
   }
 }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListView.builder(
+//       itemBuilder: ((context, index) {
+//         int reversedIndex = inspections!.length - 1 - index;
+
+//         return Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+//           child: Card(
+//             child: ListTile(
+//               minLeadingWidth: 65,
+//               isThreeLine: true,
+//               tileColor: Colors.grey[200],
+//               contentPadding: const EdgeInsets.all(0),
+// onTap: () => EditInspectionsPage.show(
+//   context,
+//   inspections: inspections![reversedIndex],
+// ),
+//               leading: LeadingWidget(
+//                 inspections: inspections,
+//                 reversedIndex: reversedIndex,
+//               ),
+//               title: TitleWidget(
+//                 inspections: inspections,
+//                 reversedIndex: reversedIndex,
+//               ),
+//               subtitle: SubtitleWidget(
+//                 inspections: inspections,
+//                 reversedIndex: reversedIndex,
+//               ),
+//             ),
+//           ),
+//         );
+//       }),
+//       itemCount: inspections!.length,
+//     );
+//   }
+// }
 
 class LeadingWidget extends StatelessWidget {
   const LeadingWidget({
@@ -72,22 +134,15 @@ class LeadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: double.infinity,
-      padding: const EdgeInsets.only(right: 10.0),
-      decoration: const BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            width: 1.0,
-            color: Color.fromARGB(60, 145, 55, 55),
-          ),
-        ),
-      ),
       child: inspections![reversedIndex].photo == null
           ? const Icon(
               Icons.car_crash_outlined,
               color: Color.fromARGB(255, 138, 93, 93),
             )
-          : Image.network(inspections![reversedIndex].photo!),
+          : Image.network(
+              inspections![reversedIndex].photo!,
+              fit: BoxFit.fill,
+            ),
     );
   }
 }

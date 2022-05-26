@@ -22,6 +22,7 @@ class _VehicleInspectionOverviewViewState
   Widget build(BuildContext context) {
     final database = Provider.of<Firestore>(context, listen: false);
     return Scaffold(
+      backgroundColor: const Color(0xFF464A56),
       appBar: AppBar(
         title: const Text('Vehicle Inspections'),
         actions: [

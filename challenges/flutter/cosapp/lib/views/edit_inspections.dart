@@ -212,17 +212,18 @@ class _EditInspectionsPageState extends State<EditInspectionsPage> {
       ),
       TextFormField(
         initialValue: _vehicleMake != null ? "$_vehicleMake" : null,
-        decoration: const InputDecoration(labelText: 'Vehicle make (opt.)'),
+        decoration: const InputDecoration(labelText: 'Vehicle make (optional)'),
         onSaved: (value) => _vehicleMake = value,
       ),
       TextFormField(
         initialValue: _vehicleModel != null ? "$_vehicleModel" : null,
-        decoration: const InputDecoration(labelText: 'Vehicle model (opt.)'),
+        decoration:
+            const InputDecoration(labelText: 'Vehicle model (optional)'),
         onSaved: (value) => _vehicleModel = value,
       ),
       Row(
         children: [
-          const Text('choose a photo (opt.)'),
+          const Text('choose a photo (optional)'),
           IconButton(
             onPressed: () async {
               photoCarURL = await storage.addCarPhotoAndGetBackItsURL(context);

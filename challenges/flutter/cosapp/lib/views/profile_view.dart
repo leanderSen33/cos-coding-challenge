@@ -1,9 +1,6 @@
-import 'dart:developer' as devtools show log;
-import 'dart:io';
-
+import 'package:cosapp/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:cosapp/services/auth/auth_service.dart';
@@ -12,7 +9,9 @@ import 'package:cosapp/services/sorage/storage_service.dart';
 import '../enums/menu_action.dart';
 import '../models/user_preferences.dart';
 import '../services/database/firestore.dart';
+import '../widgets/custom_switch.dart';
 import '../widgets/dialogs.dart';
+import 'dart:developer' as devtools show log;
 
 class ProfileView extends StatefulWidget {
   const ProfileView({
@@ -53,220 +52,191 @@ class _ProfileViewState extends State<ProfileView> {
   Widget build(BuildContext context) {
     final isKeyboard = MediaQuery.of(context).viewInsets.bottom != 0;
     return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Column(
-          children: <Widget>[
-            if (!isKeyboard)
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(20.0),
-                      bottomRight: Radius.circular(20.0),
+      child: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+          backgroundColor: const Color(0xFF464A56),
+          resizeToAvoidBottomInset: false,
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              if (!isKeyboard)
+                SizedBox(
+                  height: 200,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(20.0),
+                        bottomRight: Radius.circular(20.0),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              color: const Color(0xFF464A56),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.arrow_back_rounded),
+                            ),
+                            FutureBuilder<String>(
+                              future: storage.getPhotoProfileURL(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<String> snapshot) {
+                                return CircleAvatar(
+                                  radius: 70.0,
+                                  backgroundImage: NetworkImage(snapshot.data ??
+                                      'https://dummyimage.com/300.png/09f/fff'),
+                                );
+                              },
+                            ),
+                            PopupMenuButton<MenuAction>(
+                              icon: const Icon(
+                                Icons.menu,
+                                color: Color(0xFF464A56),
+                              ),
+                              onSelected: chooseAction,
+                              itemBuilder: (context) {
+                                return [
+                                  const PopupMenuItem<MenuAction>(
+                                    value: MenuAction.logout,
+                                    child: Text('Logout'),
+                                  )
+                                ];
+                              },
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "Hi ${AuthService.firebase().currentUser?.email}! Nice to see you again.",
+                        ),
+                      ],
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(Icons.arrow_back_rounded),
-                          ),
-                          FutureBuilder<String>(
-                            future: storage.getPhotoProfileURL(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<String> snapshot) {
-                              return CircleAvatar(
-                                radius: 70.0,
-                                backgroundImage: NetworkImage(snapshot.data ??
-                                    'https://dummyimage.com/300.png/09f/fff'),
-                              );
-                            },
-                          ),
-                          PopupMenuButton<MenuAction>(
-                            onSelected: chooseAction,
-                            itemBuilder: (context) {
-                              return [
-                                const PopupMenuItem<MenuAction>(
-                                  value: MenuAction.logout,
-                                  child: Text('Logout'),
-                                )
-                              ];
-                            },
-                          ),
-                        ],
-                      ),
-                      Text(
-                        "Hi ${AuthService.firebase().currentUser?.email}! Nice to see you again.",
-                      ),
-                    ],
-                  ),
                 ),
-              ),
-            Expanded(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: <Widget>[
-                    const Text(
-                      "Change password",
-                      // style: Theme.of(context).textTheme.display1,
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                          hintText: "Current password",
-                          errorText: checkCurrentPasswordValid
-                              ? null
-                              : "Please double check your current password"),
-                      controller: _passwordController,
-                    ),
-                    TextFormField(
-                      decoration:
-                          const InputDecoration(hintText: "New Password"),
-                      controller: _newPasswordController,
-                      obscureText: true,
-                    ),
-                    TextFormField(
-                      decoration:
-                          const InputDecoration(hintText: "Repeat Password"),
-                      controller: _repeatPasswordController,
-                      obscureText: true,
-                      validator: (value) {
-                        return _newPasswordController.text == value
-                            ? null
-                            : "Please validate your entered password";
-                      },
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        checkCurrentPasswordValid = await _auth
-                            .validateCurrentPassword(_passwordController.text);
-                        setState(() {});
-
-                        if (_formKey.currentState!.validate() &&
-                            checkCurrentPasswordValid) {
-                          _auth.updatePassword(_newPasswordController.text);
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: const Text("Save"),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (!isKeyboard)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+              if (!isKeyboard)
+                Padding(
+                  padding: const EdgeInsets.all(25.0),
                   child: Column(
                     children: <Widget>[
-                      TextButton(
-                        child: const Text(
-                          'Change photo',
-                        ),
-                        style: TextButton.styleFrom(
-                          primary: Colors.white,
-                          backgroundColor: Colors.grey,
-                        ),
-                        onPressed: () async {
-                          await storage.changeProfilePhoto(
-                              context, isCameraMethodPreferred);
-                          setState(() {});
-                        },
-                      ),
-                      Column(
-                        children: [
-                          FutureBuilder<bool>(
-                            future: widget.firestore
-                                .getUpdatedPreferredPhotoMethod(
-                                    _auth.currentUser!.id),
-                            builder:
-                                (BuildContext context, AsyncSnapshot snapshot) {
-                              return Column(
+                      FutureBuilder<bool>(
+                        future: widget.firestore.getUpdatedPreferredPhotoMethod(
+                            _auth.currentUser!.id),
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Photo method',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              //TODO: Use init state to populate the state of this widget before created
+                              Row(
                                 children: [
-                                  const Text('Preferred photo method:'),
-                                  const SizedBox(
-                                    height: 10,
+                                  CustomSwitch(
+                                    snapshot: snapshot.data,
+                                    switchPhotoMethod: switchPhotoMethod,
                                   ),
-                                  Center(
-                                    //TODO: Use init state to populate the state of this widget before created
-                                    child: FlutterSwitch(
-                                      inactiveIcon: const Icon(Icons.folder),
-                                      activeIcon: const Icon(
-                                        Icons.camera_alt,
-                                        color: Colors.white,
-                                      ),
-                                      inactiveColor: Colors.grey,
-                                      activeColor: Colors.grey,
-                                      toggleColor: Colors.black,
-                                      inactiveToggleColor: Colors.white,
-                                      width: 90.0,
-                                      height: 33.0,
-                                      valueFontSize: 17.0,
-                                      toggleSize: 45.0,
-                                      value: snapshot.data ?? true,
-                                      borderRadius: 30.0,
-                                      padding: 4.0,
-                                      onToggle: (value) {
-                                        setState(() {
-                                          isCameraMethodPreferred = value;
-                                          setPhotoMethod(widget.firestore);
-                                        });
-                                      },
-                                    ),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  ChangePhotoTextButton(
+                                    save: changePhoto,
                                   ),
                                 ],
-                              );
-                            },
-                          ),
-                        ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              Form(
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.all(25.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      // const SizedBox(height: 10),
+                      const Text(
+                        "Change password",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextFormField(
+                        title: 'password',
+                        textController: _passwordController,
+                        isObscure: false,
+                        errorText: "Please double check your current password",
+                        checkCurrentPasswordValid: checkCurrentPasswordValid,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextFormField(
+                        title: 'new password',
+                        textController: _newPasswordController,
+                        isObscure: true,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextFormField(
+                        title: 'repeat password',
+                        textController: _repeatPasswordController,
+                        isObscure: true,
+                        validator: (value) {
+                          return _newPasswordController.text == value
+                              ? null
+                              : "Please validate your entered password";
+                        },
+                      ),
+                      TextButton(
+                        child: const Text("Save password changes"),
+                        onPressed: () async {
+                          checkCurrentPasswordValid =
+                              await _auth.validateCurrentPassword(
+                                  _passwordController.text);
+                          setState(() {});
+
+                          if (_formKey.currentState!.validate() &&
+                              checkCurrentPasswordValid) {
+                            _auth.updatePassword(_newPasswordController.text);
+                            Navigator.pop(context);
+                          }
+                        },
                       ),
                     ],
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-// TODO: Place this function in the storage_service
-  // void changePhoto() async {
-  //   try {
-  //     final XFile? image = await _picker.pickImage(
-  //         source: isCameraMethodPreferred
-  //             ? ImageSource.camera
-  //             : ImageSource.gallery);
+  void changePhoto() async {
+    await storage.changeProfilePhoto(context, isCameraMethodPreferred);
+    setState(() {});
+  }
 
-  //     if (image == null) {
-  //       devtools.log('No image was selected');
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           content: Text('No file selected'),
-  //         ),
-  //       );
-  //     } else {
-  //       devtools.log('Path of the selected image: ${image.path}');
-  //       file = File(image.path);
-
-  //       await storage.uploadFile(file);
-  //       downloadedURL = await storage.getPhotoProfileURL();
-  //       devtools.log('downloaded URL: $downloadedURL');
-  //       setState(() {});
-  //     }
-  //   } catch (e) {
-  //     devtools.log(e.toString());
-  //   }
-  // }
+  void switchPhotoMethod(bool value) {
+    setState(
+      () {
+        isCameraMethodPreferred = value;
+        setPhotoMethod(widget.firestore);
+      },
+    );
+  }
 
   void setPhotoMethod(Firestore firestore) {
     devtools.log('setPhotoMethod\'s been called');
@@ -284,5 +254,31 @@ class _ProfileViewState extends State<ProfileView> {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
     }
+  }
+}
+
+class ChangePhotoTextButton extends StatelessWidget {
+  const ChangePhotoTextButton({
+    Key? key,
+    required this.save,
+  }) : super(key: key);
+
+  final VoidCallback save;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 33,
+      child: TextButton(
+        child: const Text(
+          'Change photo',
+        ),
+        style: TextButton.styleFrom(
+          primary: Colors.white,
+          backgroundColor: Colors.grey,
+        ),
+        onPressed: save,
+      ),
+    );
   }
 }
