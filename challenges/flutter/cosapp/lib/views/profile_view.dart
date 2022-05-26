@@ -1,8 +1,6 @@
 import 'package:cosapp/widgets/custom_fields.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_switch/flutter_switch.dart';
 import 'package:provider/provider.dart';
-
 import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:cosapp/services/sorage/storage_service.dart';
 
@@ -139,7 +137,6 @@ class _ProfileViewState extends State<ProfileView> {
                               const SizedBox(
                                 height: 10,
                               ),
-                              //TODO: Use init state to populate the state of this widget before created
                               Row(
                                 children: [
                                   CustomSwitch(

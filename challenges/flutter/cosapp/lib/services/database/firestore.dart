@@ -63,7 +63,7 @@ class Firestore {
   Future<void> _setData(
       {required String path, required Map<String, dynamic> data}) async {
     final reference = FirebaseFirestore.instance.doc(path);
-    print('$path: $data');
+    devtools.log('$path: $data');
     await reference.set(data);
   }
 

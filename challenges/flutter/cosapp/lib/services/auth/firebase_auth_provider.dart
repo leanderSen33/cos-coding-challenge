@@ -1,22 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../firebase_options.dart';
 import 'auth_provider.dart';
 import 'auth_user.dart';
 import 'package:cosapp/services/auth/auth_exceptions.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'dart:developer' as devtools show log;
-import 'package:firebase_auth/firebase_auth.dart'
-    show EmailAuthProvider, FirebaseAuth, FirebaseAuthException;
 
 class FirebaseAuthProvider implements AuthProvider {
-  // @override
-  // Future<void> initialize() async {
-  //   await Firebase.initializeApp(
-  //     options: DefaultFirebaseOptions.currentPlatform,
-  //   );
-  // }
-
   @override
   AuthUser? get currentUser {
     final user = FirebaseAuth.instance.currentUser;
@@ -84,11 +73,6 @@ class FirebaseAuthProvider implements AuthProvider {
       throw GenericAuthException();
     }
   }
-
-  //   Future<void> updatePassword(String password) async {
-  //   var firebaseUser = await _auth.currentUser();
-  //   firebaseUser.updatePassword(password);
-  // }
 
   @override
   Future<bool> validateCurrentPassword(String password) async {

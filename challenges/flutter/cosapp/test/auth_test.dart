@@ -1,6 +1,7 @@
 // import 'package:cosapp/services/auth/auth_exceptions.dart';
 // import 'package:cosapp/services/auth/auth_provider.dart';
 // import 'package:cosapp/services/auth/auth_user.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:test/test.dart';
 
 // void main() {
@@ -17,24 +18,9 @@
 //       );
 //     });
 
-//     test('Should be able to be initialized', () async {
-//       await provider.initialize();
-//       expect(provider.isInitialized, true);
-//     });
-
 //     test('User should be null after initialization', () {
 //       expect(provider.currentUser, null);
 //     });
-
-//     test(
-//       'Should be able to initialize in less than 2 seconds',
-//       () async {
-//         await provider.initialize();
-//         expect(provider.isInitialized, true);
-//       },
-//       timeout: const Timeout(Duration(seconds: 2)),
-//     );
-
 
 //     test('Should be able to log out and log in again', () async {
 //       await provider.logOut();
@@ -52,18 +38,11 @@
 
 // class MockAuthProvider implements AuthProvider {
 //   AuthUser? _user;
-//   var _isInitialized = false;
+//   final _isInitialized = false;
 //   bool get isInitialized => _isInitialized;
-
 
 //   @override
 //   AuthUser? get currentUser => _user;
-
-//   @override
-//   Future<void> initialize() async {
-//     await Future.delayed(const Duration(seconds: 1));
-//     _isInitialized = true;
-//   }
 
 //   @override
 //   Future<AuthUser> logIn({
@@ -90,9 +69,26 @@
 //     _user = null;
 //   }
 
-
 //   @override
 //   Future<void> sendPasswordReset({required String toEmail}) {
+//     throw UnimplementedError();
+//   }
+
+//   @override
+//   Stream<User?> authStateChanges() {
+//     // TODO: implement authStateChanges
+//     throw UnimplementedError();
+//   }
+
+//   @override
+//   Future<void> updatePassword(String password) {
+//     // TODO: implement updatePassword
+//     throw UnimplementedError();
+//   }
+
+//   @override
+//   Future<bool> validateCurrentPassword(String password) {
+//     // TODO: implement validateCurrentPassword
 //     throw UnimplementedError();
 //   }
 // }

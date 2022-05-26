@@ -44,13 +44,3 @@ class Inspections {
 }
 
 
-  // to get documents: static String Inspection(String uid, String jobId) => 'vehicle_inspections/$uid';
-
-  // to get list: static String Inspection(String uid, String jobId) => 'vehicle_inspections';
-
-
-// Date of inspection (required) - Date cannot be in the future
-// Vehicle Identification Number (required) - must be exactly 17 characters. Cannot contain I, O, U characters. Can only contain numbers and letters.
-// Vehicle make (optional)
-// Vehicle model (optional)
-// Vehicle photo (optional)

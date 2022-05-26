@@ -1,4 +1,3 @@
-//TODO: DELETE if not used
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -17,7 +16,6 @@ class _DatePickerWidgetState extends State<DatePickerWidget> {
       return 'Select Date';
     } else {
       return DateFormat('MM/dd/yyyy').format(date!);
-      // return '${date.month}/${date.day}/${date.year}';
     }
   }
 

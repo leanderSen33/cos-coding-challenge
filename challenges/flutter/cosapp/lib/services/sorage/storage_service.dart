@@ -7,8 +7,6 @@ import 'dart:developer' as devtools show log;
 
 import 'package:image_picker/image_picker.dart';
 
-//TODO: configure imagePicker for IOS. We have to edit the plist or somthing
-
 class StorageService {
   final ImagePicker _picker = ImagePicker();
   final storageRef = FirebaseStorage.instance;
@@ -84,7 +82,7 @@ class StorageService {
       // devtools.log('downloading path: ${path.toString()}');
       results = await storageRef.ref(path).getDownloadURL();
     } on FirebaseException catch (e) {
-      // devtools.log('Downloading ERROR: ${e.toString()}');
+      devtools.log('Downloading ERROR: ${e.toString()}');
     }
     return results;
   }
