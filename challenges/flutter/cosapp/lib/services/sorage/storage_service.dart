@@ -67,7 +67,6 @@ class StorageService {
     } catch (e) {
       devtools.log(e.toString());
     }
-
     return results;
   }
 

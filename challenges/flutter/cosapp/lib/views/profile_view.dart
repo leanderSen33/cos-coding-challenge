@@ -42,8 +42,18 @@ class _ProfileViewState extends State<ProfileView> {
   final _newPasswordController = TextEditingController();
   final _repeatPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool isCameraMethodPreferred = false;
-  bool checkCurrentPasswordValid = true;
+  bool _isCameraMethodPreferred = false;
+  bool _checkCurrentPasswordValid = true;
+  Future<String?>? _photoProfile;
+  Future<bool>? _photoMethodPreference;
+
+  @override
+  void initState() {
+    _photoProfile = storage.getPhotoProfileURL();
+    _photoMethodPreference =
+        widget.firestore.getUpdatedPreferredPhotoMethod(_auth.currentUser!.id);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,21 +92,43 @@ class _ProfileViewState extends State<ProfileView> {
                               icon: const Icon(Icons.arrow_back_rounded),
                             ),
                             FutureBuilder<String?>(
-                              future: storage.getPhotoProfileURL(),
+                              future: _photoProfile,
                               builder: (BuildContext context,
                                   AsyncSnapshot<String?> snapshot) {
-                                if (snapshot.hasData) {
-                                  return CircleAvatar(
-                                    radius: 70.0,
-                                    backgroundImage:
-                                        NetworkImage(snapshot.data!),
+                                devtools.log(
+                                    'PhotoProfile state: ${snapshot.connectionState.toString()}');
+
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const SizedBox(
+                                    height: 80,
+                                    width: 80,
+                                    child: CircularProgressIndicator(
+                                      backgroundColor: Colors.black26,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.black, //<-- SEE HERE
+                                      ),
+                                    ),
                                   );
+                                } else if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  if (snapshot.hasData) {
+                                    return CircleAvatar(
+                                      radius: 70.0,
+                                      backgroundImage:
+                                          NetworkImage(snapshot.data!),
+                                    );
+                                  } else {
+                                    return const CircleAvatar(
+                                      radius: 70.0,
+                                      backgroundImage: AssetImage(
+                                          'assets/avatar_placeholder.png'),
+                                    );
+                                  }
+                                } else {
+                                  return Text(
+                                      'State: ${snapshot.connectionState}');
                                 }
-                                return const CircleAvatar(
-                                  radius: 70.0,
-                                  backgroundImage: AssetImage(
-                                      'assets/avatar_placeholder.png'),
-                                );
                               },
                             ),
                             PopupMenuButton<MenuAction>(
@@ -129,8 +161,7 @@ class _ProfileViewState extends State<ProfileView> {
                   child: Column(
                     children: <Widget>[
                       FutureBuilder<bool>(
-                        future: widget.firestore.getUpdatedPreferredPhotoMethod(
-                            _auth.currentUser!.id),
+                        future: _photoMethodPreference,
                         builder:
                             (BuildContext context, AsyncSnapshot snapshot) {
                           return Column(
@@ -182,7 +213,7 @@ class _ProfileViewState extends State<ProfileView> {
                         textController: _passwordController,
                         isObscure: false,
                         errorText: "Please double check your current password",
-                        checkCurrentPasswordValid: checkCurrentPasswordValid,
+                        checkCurrentPasswordValid: _checkCurrentPasswordValid,
                       ),
                       const SizedBox(height: 12),
                       CustomTextFormField(
@@ -204,12 +235,12 @@ class _ProfileViewState extends State<ProfileView> {
                       TextButton(
                         child: const Text("Save password changes"),
                         onPressed: () async {
-                          checkCurrentPasswordValid =
+                          _checkCurrentPasswordValid =
                               await _auth.validateCurrentPassword(
                                   _passwordController.text);
                           setState(() {});
                           if (_formKey.currentState!.validate() &&
-                              checkCurrentPasswordValid) {
+                              _checkCurrentPasswordValid) {
                             _auth.updatePassword(_newPasswordController.text);
                             Navigator.pop(context);
                           }
@@ -227,14 +258,14 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   void changePhoto() async {
-    await storage.changeProfilePhoto(context, isCameraMethodPreferred);
+    await storage.changeProfilePhoto(context, _isCameraMethodPreferred);
     setState(() {});
   }
 
   void switchPhotoMethod(bool value) {
     setState(
       () {
-        isCameraMethodPreferred = value;
+        _isCameraMethodPreferred = value;
         setPhotoMethod(widget.firestore);
       },
     );
@@ -243,7 +274,7 @@ class _ProfileViewState extends State<ProfileView> {
   void setPhotoMethod(Firestore firestore) {
     devtools.log('setPhotoMethod\'s been called');
     final userPreference = UserPreferences(
-        id: _auth.currentUser!.id, preferCamera: isCameraMethodPreferred);
+        id: _auth.currentUser!.id, preferCamera: _isCameraMethodPreferred);
     firestore.setPreferredPhotoMethod(userPreference);
   }
 
