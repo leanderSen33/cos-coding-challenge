@@ -42,7 +42,6 @@ class _ProfileViewState extends State<ProfileView> {
   final _newPasswordController = TextEditingController();
   final _repeatPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String downloadedURL = 'https://dummyimage.com/300.png/09f/fff';
   bool isCameraMethodPreferred = false;
   bool checkCurrentPasswordValid = true;
 
@@ -82,14 +81,21 @@ class _ProfileViewState extends State<ProfileView> {
                               },
                               icon: const Icon(Icons.arrow_back_rounded),
                             ),
-                            FutureBuilder<String>(
+                            FutureBuilder<String?>(
                               future: storage.getPhotoProfileURL(),
                               builder: (BuildContext context,
-                                  AsyncSnapshot<String> snapshot) {
-                                return CircleAvatar(
+                                  AsyncSnapshot<String?> snapshot) {
+                                if (snapshot.hasData) {
+                                  return CircleAvatar(
+                                    radius: 70.0,
+                                    backgroundImage:
+                                        NetworkImage(snapshot.data!),
+                                  );
+                                }
+                                return const CircleAvatar(
                                   radius: 70.0,
-                                  backgroundImage: NetworkImage(snapshot.data ??
-                                      'https://dummyimage.com/300.png/09f/fff'),
+                                  backgroundImage: AssetImage(
+                                      'assets/avatar_placeholder.png'),
                                 );
                               },
                             ),

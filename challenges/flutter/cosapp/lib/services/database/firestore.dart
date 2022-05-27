@@ -23,7 +23,8 @@ class Firestore {
   }
 
   Future<bool> getUpdatedPreferredPhotoMethod(String userId) async {
-    devtools.log('getUpdatedPreferredPhotoMethod was called');
+    devtools
+        .log('getUpdatedPreferredPhotoMethod was called (firestore_service)');
     bool value = false;
     var data = await db
         .collection("users")

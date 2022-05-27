@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -23,14 +22,52 @@ class StorageService {
             (_) => devtools.log('uploading file, done'),
           );
     } on FirebaseException catch (e) {
+      devtools.log(
+        e.toString(),
+      );
+    }
+  }
+
+  Future<void> changeProfilePhoto(
+      BuildContext context, bool isCameraMethodPreferred) async {
+    devtools.log('changeProfilePhoto method was called (sorage_service)');
+    try {
+      final XFile? image = await _picker.pickImage(
+          source: isCameraMethodPreferred
+              ? ImageSource.camera
+              : ImageSource.gallery);
+
+      if (image == null) {
+        devtools.log('No image was selected');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No file selected'),
+          ),
+        );
+      } else {
+        devtools.log('Path of the selected image: ${image.path}');
+        file = File(image.path);
+
+        await uploadProfilePhotoFile(file);
+        final downloadedURL = await getPhotoProfileURL();
+        devtools.log('downloaded URL: $downloadedURL');
+      }
+    } catch (e) {
       devtools.log(e.toString());
     }
   }
 
-  Future<String> getPhotoProfileURL() async {
-    final results = await storageRef
-        .ref('user/profile/${currentUser?.id}')
-        .getDownloadURL();
+  Future<String?> getPhotoProfileURL() async {
+    devtools.log('getPhotoProfileURL method was called (storage_service)');
+    String? results;
+    try {
+      results = await storageRef
+          .ref('user/profile/${currentUser?.id}')
+          .getDownloadURL();
+    } catch (e) {
+      devtools.log(e.toString());
+    }
+
     return results;
   }
 
@@ -85,33 +122,5 @@ class StorageService {
       devtools.log('Downloading ERROR: ${e.toString()}');
     }
     return results;
-  }
-
-  Future<void> changeProfilePhoto(
-      BuildContext context, bool isCameraMethodPreferred) async {
-    try {
-      final XFile? image = await _picker.pickImage(
-          source: isCameraMethodPreferred
-              ? ImageSource.camera
-              : ImageSource.gallery);
-
-      if (image == null) {
-        devtools.log('No image was selected');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No file selected'),
-          ),
-        );
-      } else {
-        devtools.log('Path of the selected image: ${image.path}');
-        file = File(image.path);
-
-        await uploadProfilePhotoFile(file);
-        final downloadedURL = await getPhotoProfileURL();
-        devtools.log('downloaded URL: $downloadedURL');
-      }
-    } catch (e) {
-      devtools.log(e.toString());
-    }
   }
 }
