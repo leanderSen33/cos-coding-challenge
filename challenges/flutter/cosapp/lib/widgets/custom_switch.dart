@@ -8,7 +8,7 @@ class CustomSwitch extends StatelessWidget {
     required this.switchPhotoMethod,
   }) : super(key: key);
 
-  final bool? snapshot;
+  final bool snapshot;
   final Function(bool) switchPhotoMethod;
 
   @override
@@ -25,7 +25,7 @@ class CustomSwitch extends StatelessWidget {
       inactiveToggleColor: Colors.white,
       width: 80.0,
       height: 33.0,
-      value: snapshot ?? true,
+      value: snapshot,
       borderRadius: 20.0,
       padding: 4.0,
       onToggle: switchPhotoMethod,

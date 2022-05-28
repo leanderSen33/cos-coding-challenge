@@ -1,15 +1,19 @@
-import 'package:cosapp/widgets/custom_fields.dart';
+import 'dart:developer' as devtools show log;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:cosapp/services/auth/auth_service.dart';
 import 'package:cosapp/services/sorage/storage_service.dart';
+import 'package:cosapp/widgets/custom_fields.dart';
 
 import '../enums/menu_action.dart';
 import '../models/user_preferences.dart';
 import '../services/database/firestore.dart';
-import '../widgets/custom_switch.dart';
+import '../widgets/change_photo_button.dart';
 import '../widgets/dialogs.dart';
-import 'dart:developer' as devtools show log;
+
+enum PhotoMethod { camera, gallery }
 
 class ProfileView extends StatefulWidget {
   const ProfileView({
@@ -44,17 +48,11 @@ class _ProfileViewState extends State<ProfileView> {
   final _formKey = GlobalKey<FormState>();
   bool _isCameraMethodPreferred = false;
   bool _checkCurrentPasswordValid = true;
-  Future<String?>? _photoProfile;
 
-  @override
-  void initState() {
-    _photoProfile = storage.getPhotoProfileURL();
-
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
+    devtools.log('build method\'s been initialized');
     final isKeyboard = MediaQuery.of(context).viewInsets.bottom != 0;
     return SafeArea(
       child: GestureDetector(
@@ -90,12 +88,9 @@ class _ProfileViewState extends State<ProfileView> {
                               icon: const Icon(Icons.arrow_back_rounded),
                             ),
                             FutureBuilder<String?>(
-                              future: _photoProfile,
+                              future: storage.getPhotoProfileURL(),
                               builder: (BuildContext context,
                                   AsyncSnapshot<String?> snapshot) {
-                                devtools.log(
-                                    'PhotoProfile state: ${snapshot.connectionState.toString()}');
-
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
                                   return const SizedBox(
@@ -163,6 +158,10 @@ class _ProfileViewState extends State<ProfileView> {
                             _auth.currentUser!.id),
                         builder:
                             (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            _isCameraMethodPreferred = snapshot.data;
+                          }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -175,15 +174,36 @@ class _ProfileViewState extends State<ProfileView> {
                               ),
                               Row(
                                 children: [
-                                  CustomSwitch(
-                                    snapshot: snapshot.data,
-                                    switchPhotoMethod: switchPhotoMethod,
+                                  IconButton(
+                                    icon: const Icon(Icons.folder),
+                                    color: _isCameraMethodPreferred
+                                        ? Colors.grey
+                                        : const Color(0xFFFDBF11),
+                                    disabledColor: const Color.fromARGB(
+                                        255, 111, 111, 111),
+                                    onPressed: snapshot.hasData
+                                        ? () => selectPhotoMethod(
+                                            PhotoMethod.gallery)
+                                        : null,
                                   ),
+                                  IconButton(
+                                      icon: const Icon(Icons.camera_alt),
+                                      color: _isCameraMethodPreferred
+                                          ? const Color(0xFFFDBF11)
+                                          : Colors.grey,
+                                      disabledColor: const Color.fromARGB(
+                                          255, 111, 111, 111),
+                                      onPressed: snapshot.hasData
+                                          ? () => selectPhotoMethod(
+                                              PhotoMethod.camera)
+                                          : null),
                                   const SizedBox(
                                     width: 20,
                                   ),
                                   ChangePhotoTextButton(
                                     save: changePhoto,
+                                    activateButton:
+                                        snapshot.hasData ? true : false,
                                   ),
                                 ],
                               ),
@@ -261,13 +281,18 @@ class _ProfileViewState extends State<ProfileView> {
     setState(() {});
   }
 
-  void switchPhotoMethod(bool value) {
-    setState(
-      () {
-        _isCameraMethodPreferred = value;
+  void selectPhotoMethod(PhotoMethod method) {
+    if (method == PhotoMethod.camera) {
+      setState(() {
+        _isCameraMethodPreferred = true;
         setPhotoMethod(widget.firestore);
-      },
-    );
+      });
+    } else {
+      setState(() {
+        _isCameraMethodPreferred = false;
+        setPhotoMethod(widget.firestore);
+      });
+    }
   }
 
   void setPhotoMethod(Firestore firestore) {
@@ -286,31 +311,5 @@ class _ProfileViewState extends State<ProfileView> {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
     }
-  }
-}
-
-class ChangePhotoTextButton extends StatelessWidget {
-  const ChangePhotoTextButton({
-    Key? key,
-    required this.save,
-  }) : super(key: key);
-
-  final VoidCallback save;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 33,
-      child: TextButton(
-        child: const Text(
-          'Change photo',
-        ),
-        style: TextButton.styleFrom(
-          primary: Colors.white,
-          backgroundColor: Colors.grey,
-        ),
-        onPressed: save,
-      ),
-    );
   }
 }

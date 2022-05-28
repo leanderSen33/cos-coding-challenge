@@ -36,7 +36,6 @@ class Firestore {
 
     if (data != null) {
       for (var d in data.values) {
-        devtools.log('d is: $d');
         value = d;
       }
     }
