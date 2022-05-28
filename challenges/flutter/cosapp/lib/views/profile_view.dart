@@ -45,13 +45,11 @@ class _ProfileViewState extends State<ProfileView> {
   bool _isCameraMethodPreferred = false;
   bool _checkCurrentPasswordValid = true;
   Future<String?>? _photoProfile;
-  Future<bool>? _photoMethodPreference;
 
   @override
   void initState() {
     _photoProfile = storage.getPhotoProfileURL();
-    _photoMethodPreference =
-        widget.firestore.getUpdatedPreferredPhotoMethod(_auth.currentUser!.id);
+
     super.initState();
   }
 
@@ -161,7 +159,8 @@ class _ProfileViewState extends State<ProfileView> {
                   child: Column(
                     children: <Widget>[
                       FutureBuilder<bool>(
-                        future: _photoMethodPreference,
+                        future: widget.firestore.getUpdatedPreferredPhotoMethod(
+                            _auth.currentUser!.id),
                         builder:
                             (BuildContext context, AsyncSnapshot snapshot) {
                           return Column(
