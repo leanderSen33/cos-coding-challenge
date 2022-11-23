@@ -100,10 +100,36 @@ class LeadingWidget extends StatelessWidget {
               padding: const EdgeInsets.all(7.0),
               child: Image.asset('assets/car_placeholder.png'),
             )
-          : Image.network(
-              inspections![reversedIndex].photo!,
-              fit: BoxFit.cover,
+          : GestureDetector(
+              onTap: () {
+                showDialog(
+                    barrierColor: Colors.black.withOpacity(0.8),
+                    context: context,
+                    builder: (context) =>
+                        ImageDialog(inspections![reversedIndex].photo!));
+              },
+              child: Image.network(
+                inspections![reversedIndex].photo!,
+                fit: BoxFit.cover,
+              ),
             ),
+    );
+  }
+}
+
+class ImageDialog extends StatelessWidget {
+  final String link;
+  const ImageDialog(this.link, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Image.network(
+        link,
+        width: 100,
+        height: 300,
+        fit: BoxFit.cover,
+      ),
     );
   }
 }
